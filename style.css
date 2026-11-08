@@ -214,8 +214,6 @@ svg.map { box-shadow: inset 0 0 0 2px #2a1d12; }
 @keyframes flag { 0%, 100% { transform: skewY(0deg); } 50% { transform: skewY(-6deg); } }
 .pulse { fill: none; stroke: #f1c75b; stroke-width: 4; animation: pulse 2s ease-out infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes pulse { 0% { transform: scale(.8); opacity: 1; } 100% { transform: scale(1.9); opacity: 0; } }
-.rose { animation: rose 30s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-@keyframes rose { 0%, 100% { rotate: -4deg; } 50% { rotate: 4deg; } }
 .route { fill: none; stroke: #2a1d12; stroke-opacity: .45; stroke-width: 2.5; stroke-dasharray: 7 7; animation: march 1.2s linear infinite; }
 .route.best { stroke: #c9962b; stroke-opacity: 1; stroke-width: 4; }
 .route.frozen { stroke: #8fa3ad; stroke-opacity: .5; animation: none; }
