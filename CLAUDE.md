@@ -26,5 +26,10 @@ Handel + Herrschaft kombiniert · Hot-Seat 1–4 Spieler + Computergegner · mod
   Aufträge der Stadträte (engine: offer/quest/deliverQuest), audio.js (generative Musik D-Dorisch, Meeresrauschen,
   SFX; an/aus), Karte animiert (Wellen, Glitzern, Möwen, schaukelnde Schiffe, Flaggen), Seerouten um Skagen/Sund
   (SK.route), Losschicken mit Zielschildern (Reisezeit + Erlös, bestes Ziel gold), Schiff gleitet los.
+- Windrose steht still (User-Wunsch). Design-Leinwand „Salz & Krone – Design“ (Claude Design, privat):
+  https://claude.ai/artifact/H9T3tz9jWMQ3jLsWUgyKMG – Stil „Hansekontor“ (Pergament #F4EAD3, Tinte #2A1E14,
+  Messing #E0B24A, Siegelrot #9A2B1E, Tiefsee #1F4E63; Cinzel + Crimson Pro). Artboards: Desktop-Karte mit
+  linker Navigationsleiste, Markt iPhone (Kaufen/Verkaufen-Umschalter, Stepper, Abschlussleiste), Story-Brief,
+  Titel. Noch NICHT ins Spiel übernommen – wartet auf Feedback des Users.
 - Ideen für später: Konvois/Kapitäne, Hansetage/Belagerungen, Heirat & Erbfolge, Musik/SFX, bessere Grafiken,
   KI-Schwierigkeitsstufen.
