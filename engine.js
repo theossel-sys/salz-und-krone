@@ -93,6 +93,20 @@
   const pick = (s, arr) => arr[Math.floor(rng(s) * arr.length)];
   const dist = (a, b) => Math.hypot(C[a].x - C[b].x, C[a].y - C[b].y);
 
+  // Seerouten für die Karte: Nordsee und Ostsee verbindet die Fahrt um Jütland (Skagen) und durch den Sund
+  const WEST = ['bruegge', 'bremen', 'hamburg', 'bergen'];
+  const WP = { kueste: [322, 338], skagen: [384, 270], sund: [494, 372] };
+  function route(a, b) {
+    const A = [C[a].x, C[a].y], Bp = [C[b].x, C[b].y];
+    const wa = WEST.includes(a), wb = WEST.includes(b);
+    if (wa === wb) return [A, Bp];
+    const west = wa ? a : b, east = wa ? b : a;
+    const pts = [[C[west].x, C[west].y]];
+    if (west !== 'bergen') pts.push(WP.kueste);
+    pts.push(WP.skagen, WP.sund, [C[east].x, C[east].y]);
+    return wa ? pts : pts.reverse();
+  }
+
   // ---------- Neues Spiel ----------
   function newGame(opts) {
     const s = {
@@ -118,6 +132,7 @@
         id: i, name: p.name || 'Spieler ' + (i + 1), ai: !!p.ai, color: COLORS[i % COLORS.length], home,
         gold: 1200, land: 50, pop: 80, tax: 20, ansehen: 10, rank: 0, soldiers: 0, buildings: {},
         kontore: { [home]: emptyGoods() }, ships: [], harvest: 0, annualDue: false, alive: true, stats: [],
+        story: p.ai ? [] : ['prolog'], flags: {}, quest: null, offer: null, questsDone: 0,
       };
       pl.kontore[home].getreide = 30;
       addShip(s, pl, 'kogge', home);
@@ -354,11 +369,57 @@
     if (pl.tax > 30) da -= 3; else if (pl.tax <= 15) da += 1;
     pl.ansehen = clamp(pl.ansehen + da, 0, 100);
     pl.annualDue = false;
+    if (r < 0.8) beat(pl, 'hunger', true);
+    if (pl.buildings.dom) beat(pl, 'dom', true);
     const diff = pl.pop - before;
     return { ration, need: Math.round(need), r, pop: pl.pop, diff, da };
   }
   function suggestedRation(pl) {
     return Math.min(pl.kontore[pl.home].getreide, Math.ceil(pl.pop * GRAIN_PER_HEAD));
+  }
+
+  // ---------- Story-Wendepunkte (die Oberfläche erzählt sie) ----------
+  function beat(pl, key, once) {
+    if (pl.ai) return;
+    if (once) { if (pl.flags[key]) return; pl.flags[key] = true; }
+    pl.story.push(key);
+  }
+
+  // ---------- Aufträge der Stadträte ----------
+  const COUNCILLORS = ['Tidemann', 'Wessel', 'Gerdrud', 'Albrecht', 'Hermen', 'Telse', 'Volquin', 'Ghese', 'Bertolt', 'Wobbeke'];
+  function makeOffer(s, pl) {
+    const cities = CITIES.filter(c => c.id !== pl.home);
+    const c = pick(s, cities);
+    const g = pick(s, c.d);
+    const qty = Math.min(90, Math.round((10 + pl.rank * 8) * (0.8 + rng(s) * 0.5) / 5) * 5);
+    return {
+      city: c.id, good: g, qty, deadline: s.round + 3 + Math.floor(rng(s) * 3),
+      reward: Math.round(qty * G[g].base * (1.7 + rng(s) * 0.6) / 10) * 10, rep: 3 + pl.rank,
+      giver: COUNCILLORS[Math.floor(rng(s) * COUNCILLORS.length)],
+    };
+  }
+  function acceptQuest(s, pl) {
+    if (!pl.offer) return 'Kein Angebot.';
+    pl.quest = pl.offer; pl.offer = null;
+    log(s, pl, `nimmt einen Auftrag des Rates von ${C[pl.quest.city].name} an.`);
+    return null;
+  }
+  function declineQuest(s, pl) { pl.offer = null; return null; }
+  function canDeliver(s, pl, h) {
+    const q = pl.quest;
+    if (!q || !h) return false;
+    return holderCity(pl, h) === q.city && holderGoods(pl, h)[q.good] >= q.qty;
+  }
+  function deliverQuest(s, pl, h) {
+    if (!canDeliver(s, pl, h)) return 'Die Ware ist nicht vollständig hier.';
+    const q = pl.quest;
+    holderGoods(pl, h)[q.good] -= q.qty;
+    s.cities[q.city][q.good].stock += q.qty;
+    pl.gold += q.reward;
+    pl.ansehen = clamp(pl.ansehen + q.rep, 0, 100);
+    pl.quest = null; pl.questsDone++;
+    log(s, pl, `erfüllt den Auftrag des Rates von ${C[q.city].name} und erhält ${fmt(q.reward)} Gold.`);
+    return null;
   }
 
   // ---------- Rundenablauf ----------
@@ -375,6 +436,7 @@
       pl.ansehen = clamp(pl.ansehen + 3, 0, 100);
       log(s, pl, `wird zum ${RANKS[pl.rank].name} ernannt!`);
       msgs.push(`Du wirst zum ${RANKS[pl.rank].name} ernannt!`);
+      beat(pl, 'rang' + pl.rank, true);
       if (pl.rank === RANKS.length - 1 && !s.over) {
         s.over = true; s.winner = pl.id;
         log(s, pl, 'ist Reichsfürst und gewinnt das Spiel!');
@@ -415,6 +477,20 @@
     }
     s.players.forEach(pl => {
       pl.events = [];
+      pl.offer = null;
+      if (pl.quest && s.round > pl.quest.deadline) {
+        pl.ansehen = clamp(pl.ansehen - 3, 0, 100);
+        pl.events.push(`Der Rat von ${C[pl.quest.city].name} ist verärgert: Du hast den Auftrag nicht rechtzeitig erfüllt. Ansehen −3.`);
+        log(s, pl, `hat einen Auftrag des Rates von ${C[pl.quest.city].name} versäumt.`);
+        pl.quest = null;
+      }
+      if (!pl.ai && !pl.quest && s.round >= 2 && rng(s) < 0.35) { pl.offer = makeOffer(s, pl); beat(pl, 'auftrag', true); }
+      if (se === 0 && !pl.ai) beat(pl, 'jahr');
+      if (!pl.ai && year(s) === START_YEAR + 6 && se === 0 && !pl.flags.erbe) {
+        pl.flags.erbe = true;
+        pl.gold += 1500; pl.ansehen = clamp(pl.ansehen + 5, 0, 100);
+        pl.story.push('erbe');
+      }
       // Schiffe
       pl.ships.slice().forEach(sh => {
         if (sh.at) return;
@@ -425,6 +501,7 @@
             pl.ships = pl.ships.filter(x => x !== sh);
             pl.events.push(`Die „${sh.name}“ ist im Sturm gesunken – mit Mann und Ladung.`);
             log(s, pl, `verliert die „${sh.name}“ im Sturm.`);
+            beat(pl, 'schiffbruch', true);
             return;
           }
           const lost = 0.2 + rng(s) * 0.25;
@@ -457,6 +534,7 @@
         pl.gold -= interest;
         pl.ansehen = clamp(pl.ansehen - 2, 0, 100);
         pl.events.push(`Du bist verschuldet: ${fmt(interest)} Gold Zinsen an die Wechsler.`);
+        beat(pl, 'schulden', true);
       }
       // Zufallsereignis
       if (rng(s) < 0.22) randomEvent(s, pl);
@@ -605,6 +683,7 @@
     newGame, season, year, seasonName, isFrozen, load, capOf, price, buyPrice, sellPrice, quote, worth, rankCheck,
     fmt, buy, sell, transfer, sail, travelTime, buyShip, sellShip, arm, buyKontor, buyLand, build, hire, donate,
     setTax, feud, annual, suggestedRation, beginTurn, endTurn, aiTurn, score, dist, holderGoods, holderObj,
+    acceptQuest, declineQuest, canDeliver, deliverQuest, route,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.SK = API;

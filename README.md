@@ -11,6 +11,11 @@ Grafik sind eigenständig.
 `index.html` über einen Webserver öffnen (z. B. `python3 -m http.server`), oder über GitHub Pages.
 Auf iPhone/iPad: in Safari „Teilen → Zum Home-Bildschirm“.
 
+## Geschichte
+Dein Vater Johan ist mit seiner Flotte auf See geblieben; geblieben sind dir eine alte Kogge, ein kleines Gut und
+1.200 Gulden. Deine Großmutter Mechthild schreibt dir Briefe, Stadträte vergeben Aufträge, und jeder Rangaufstieg
+öffnet ein neues Kapitel – bis zum Epilog. Ein kurzes Intro erzählt den Anfang.
+
 ## Regeln in Kürze
 - **Runde = Jahreszeit.** Jeder Spieler macht seinen Zug, dann vergeht eine Jahreszeit. Die Zugreihenfolge rotiert.
 - **Handel:** Jede Stadt erzeugt Waren (billig) und fragt andere nach (teuer). Jeder Kauf treibt den Preis, jeder
@@ -25,9 +30,11 @@ Auf iPhone/iPad: in Safari „Teilen → Zum Home-Bildschirm“.
 - **Fehde:** Mit Soldaten kannst du Rivalen Land und Gold abnehmen – kostet aber Ansehen.
 - **Aufstieg:** Krämer → Kaufmann → Ratsherr → Bürgermeister → Landvogt → Graf → Herzog → Reichsfürst.
   Jeder Rang verlangt Vermögen, Ansehen und je nach Stufe Land, Untertanen, Soldaten oder Bauten.
+- **Aufträge:** Stadträte bestellen Waren mit Frist – Lohn in Gold und Ansehen, Versäumnis kostet Ruf.
 - **Sieg:** Wer zuerst Reichsfürst wird – oder nach Ablauf der Jahre den höchsten Rang und das größte Vermögen hat.
 
 ## Technik
 - `engine.js` – Spiellogik ohne Oberfläche (läuft auch in Node), `ui.js` – Oberfläche, `style.css`
+- `story.js` – Prolog, Kapitel, Briefe, Epilog · `audio.js` – Musik und Geräusche, komplett per Web Audio erzeugt (keine Audiodateien)
 - Spielstand automatisch im `localStorage`
 - Test: `node tests/sim.js 5 25` lässt 4 Computergegner 25 Jahre gegeneinander spielen (Balancing)

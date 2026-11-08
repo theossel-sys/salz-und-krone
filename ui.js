@@ -50,6 +50,69 @@
   }
   const presentIn = (pl, city) => !!pl.kontore[city] || pl.ships.some(sh => sh.at === city);
 
+  // ---------- Szene: Meer, Sonne, segelnde Kogge ----------
+  function scene(dawn) {
+    return `<div class="scene"><svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${dawn ? '#2b3550' : '#1d2438'}"/><stop offset=".55" stop-color="${dawn ? '#c9755a' : '#6b4a52'}"/><stop offset=".7" stop-color="${dawn ? '#f1c27a' : '#a8735e'}"/></linearGradient>
+        <linearGradient id="deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4b6b7e"/><stop offset="1" stop-color="#14232e"/></linearGradient>
+        <radialGradient id="sunG"><stop offset="0" stop-color="#fff2c4"/><stop offset=".4" stop-color="#ffd27a"/><stop offset="1" stop-color="#ffb35a" stop-opacity="0"/></radialGradient>
+        <pattern id="sw" width="120" height="30" patternUnits="userSpaceOnUse"><path d="M0 15 Q30 4 60 15 T120 15" fill="none" stroke="#fff" stroke-opacity=".14" stroke-width="2"/></pattern>
+        <pattern id="sw2" width="200" height="50" patternUnits="userSpaceOnUse"><path d="M0 25 Q50 10 100 25 T200 25" fill="none" stroke="#ffd9a0" stroke-opacity=".12" stroke-width="3"/></pattern>
+      </defs>
+      <rect width="1600" height="900" fill="url(#sky)"/>
+      <g class="sun"><circle cx="1050" cy="560" r="260" fill="url(#sunG)"/><circle cx="1050" cy="560" r="70" fill="#ffe7a8"/></g>
+      <path d="M0,560 L120,540 L260,548 L380,530 L520,552 L640,548 L760,560 Z" fill="#3a3346" opacity=".7"/>
+      <rect y="560" width="1600" height="340" fill="url(#deep)"/>
+      <ellipse cx="1050" cy="700" rx="190" ry="150" fill="url(#sunG)" opacity=".28"/>
+      <g class="w2"><rect x="-200" y="560" width="2000" height="400" fill="url(#sw2)"/></g>
+      <g class="w1"><rect x="-120" y="580" width="1900" height="400" fill="url(#sw)"/></g>
+      <g class="cog" style="${phase(46)}"><g transform="translate(0,452)"><g class="bobber">
+        <path d="M70 20 L70 150" stroke="#2a1d12" stroke-width="6"/>
+        <path d="M76 26 Q160 70 76 140 Z" fill="#efe2c2" stroke="#3b2412" stroke-width="3"/>
+        <path d="M76 60 Q118 80 76 104" fill="none" stroke="#b3261e" stroke-width="10"/>
+        <path d="M66 18 L66 6 L92 12 Z" fill="#b3261e"/>
+        <path d="M0 150 L150 150 L128 196 L22 196 Z" fill="#3b2412"/><path d="M8 162 L142 162" stroke="#6b4523" stroke-width="5"/>
+        <rect x="4" y="132" width="26" height="20" fill="#3b2412"/><rect x="122" y="128" width="30" height="24" fill="#3b2412"/>
+      </g></g></g>
+      <g class="gulls" stroke="#1d2438" stroke-width="3" fill="none" opacity=".7"><path d="M0,0 q10,-10 20,0 q10,-10 20,0"/><path d="M60,26 q8,-8 16,0 q8,-8 16,0"/></g>
+    </svg></div>`;
+  }
+
+  // ---------- Intro ----------
+  function intro(done) {
+    const lines = STORY.INTRO.slice();
+    let i = 0, finished = false;
+    AUDIO.mood('intro'); AUDIO.startSea();
+    const box = document.createElement('div');
+    box.className = 'intro';
+    box.innerHTML = scene(true) + `<button class="btn sm skip">Überspringen ▸▸</button><div class="text"></div><div class="hint">Tippen zum Weiterlesen</div>`;
+    document.body.appendChild(box);
+    const text = box.querySelector('.text');
+    const finish = () => {
+      if (finished) return; finished = true;
+      clearTimeout(timer);
+      AUDIO.stopSea(); AUDIO.mood('game');
+      box.remove(); done();
+    };
+    let timer;
+    const show = () => {
+      clearTimeout(timer);
+      if (i < lines.length) {
+        text.innerHTML = `<p>${esc(lines[i++])}</p>`;
+        timer = setTimeout(show, 5200);
+      } else if (i === lines.length) {
+        i++; text.innerHTML = '';
+        box.querySelector('.hint').textContent = 'Tippen, um zu beginnen';
+        const tc = document.createElement('div'); tc.className = 'titlecard'; tc.innerHTML = '<h1>Salz &amp; Krone</h1>';
+        box.appendChild(tc); AUDIO.play('bell');
+        timer = setTimeout(finish, 5000);
+      } else finish();
+    };
+    box.addEventListener('click', e => { if (e.target.closest('.skip')) finish(); else show(); });
+    setTimeout(show, 900);
+  }
+
   // ---------- Titelbild / Neues Spiel ----------
   const setup = {
     years: 15,
@@ -73,7 +136,7 @@
         </select>
       </div>`).join('');
     $app.innerHTML = `
-      <div class="title">
+      <div class="title">${scene(false)}<div class="title-dim"></div>
         <h1>Salz &amp; Krone</h1>
         <div class="sub">Handle mit Salz und Hering zwischen Brügge und Reval, kaufe Land, baue dein Lehen aus – und steige vom Krämer zum Reichsfürsten auf.</div>
         ${saved && !saved.over ? `<button class="btn primary" data-t="cont">Spiel fortsetzen – ${SK.SEASONS[saved.round % 4]} ${SK.START_YEAR + Math.floor(saved.round / 4)}</button>` : ''}
@@ -83,7 +146,9 @@
           <h3>Spieldauer</h3>
           <div class="seg">${[10, 15, 25].map(y => `<button data-years="${y}" class="${setup.years === y ? 'on' : ''}">${y} Jahre</button>`).join('')}</div>
           <p class="muted small">Gewonnen hat, wer zuerst Reichsfürst wird – oder am Ende den höchsten Rang und das größte Vermögen hat. Mehrere Menschen spielen abwechselnd am selben Gerät.</p>
-          <div class="actions" style="display:flex;justify-content:flex-end"><button class="btn primary" data-t="start">Spiel beginnen</button></div>
+          <div class="actions" style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+            <span class="row"><button class="btn sm" data-t="music">${AUDIO.music ? '🎵 Musik an' : '🔇 Musik aus'}</button></span>
+            <button class="btn primary" data-t="start">Spiel beginnen</button></div>
         </div>
       </div>`;
     $app.querySelectorAll('[data-name]').forEach(el => { el.oninput = () => { setup.players[+el.dataset.name].name = el.value; }; });
@@ -100,13 +165,15 @@
       if (y) { setup.years = +y.dataset.years; title(); return; }
       const t = e.target.closest('[data-t]');
       if (!t) return;
+      if (t.dataset.t === 'music') { AUDIO.setMusic(!AUDIO.music); title(); return; }
       if (t.dataset.t === 'cont') { S = saved; ui.shown = -1; startTurn(); }
       if (t.dataset.t === 'start') {
         const players = setup.players.filter(p => !p.off).map(p => ({ name: p.name.trim() || 'Namenlos', ai: p.ai, home: p.home }));
         if (!players.some(p => !p.ai)) { toast('Mindestens ein Mensch muss mitspielen.'); return; }
         S = SK.newGame({ players, years: setup.years });
         ui.shown = -1;
-        startTurn();
+        save();
+        intro(startTurn);
       }
     };
   }
@@ -143,17 +210,55 @@
     else render();
   }
 
+  const ICONS = {
+    kerze: '<svg viewBox="0 0 30 30"><path d="M12 12h6v15h-6z" fill="#f6e7c8"/><path d="M15 3c3 4 3 7 0 8-3-1-3-4 0-8z" fill="#ffd27a"/></svg>',
+    rolle: '<svg viewBox="0 0 30 30"><rect x="6" y="7" width="18" height="16" rx="3" fill="#f6e7c8"/><path d="M10 12h10M10 16h10M10 20h6" stroke="#8e1f15" stroke-width="1.5"/></svg>',
+    schiff: '<svg viewBox="0 0 30 30"><path d="M15 4v16" stroke="#f6e7c8" stroke-width="2"/><path d="M16 5q8 6 0 13z" fill="#f6e7c8"/><path d="M4 20h22l-4 6H8z" fill="#f6e7c8"/></svg>',
+    muenze: '<svg viewBox="0 0 30 30"><circle cx="15" cy="15" r="10" fill="#ffd27a"/><circle cx="15" cy="15" r="6.5" fill="none" stroke="#8e5f10" stroke-width="1.5"/></svg>',
+    aehre: '<svg viewBox="0 0 30 30"><path d="M15 27V6" stroke="#f6e7c8" stroke-width="2"/><g fill="#ffd27a"><ellipse cx="11" cy="10" rx="3" ry="5"/><ellipse cx="19" cy="10" rx="3" ry="5"/><ellipse cx="11" cy="18" rx="3" ry="5"/><ellipse cx="19" cy="18" rx="3" ry="5"/></g></svg>',
+    krone: '<svg viewBox="0 0 30 30"><path d="M5 22l-1-13 6 5 5-8 5 8 6-5-1 13z" fill="#ffd27a" stroke="#8e5f10"/><rect x="5" y="22" width="20" height="3" fill="#ffd27a"/></svg>',
+    feder: '<svg viewBox="0 0 30 30"><path d="M24 4C12 6 8 14 7 24l3-3c6 0 11-6 14-17z" fill="#f6e7c8"/><path d="M7 24L18 11" stroke="#8e1f15" stroke-width="1.2"/></svg>',
+  };
+  function letter(card, onDone) {
+    const lines = (Array.isArray(card.text) ? card.text : [card.text]).filter(Boolean);
+    const body = lines.map((t, i) => `<p class="${t.startsWith('—') ? 'sig' : ''}">${esc(t)}</p>`).join('');
+    AUDIO.play(card.icon === 'krone' ? 'fanfare' : 'page');
+    if (card.icon === 'krone') setTimeout(() => AUDIO.play('bell'), 900);
+    modal(`<div class="letter-in"><div class="head"><div class="wax">${ICONS[card.icon] || ICONS.feder}</div><h2>${esc(card.title)}</h2></div>
+      ${body}${card.sign ? `<p class="goal">${esc(card.sign)}</p>` : ''}
+      <div class="actions"><button class="btn primary" data-m="ok">Weiter</button></div></div>`, () => { closeModal(); onDone(); });
+    $modal.querySelector('.sheet').classList.add('letter');
+  }
   function news(pl, msgs) {
+    const queue = [];
+    // Story zuerst
+    (pl.story || []).splice(0).forEach(key => {
+      if (key === 'jahr') queue.push(next => letter(STORY.yearLetter(S, pl), next));
+      else if (STORY.BEATS[key]) {
+        const b = STORY.BEATS[key];
+        queue.push(next => letter({ icon: b.icon, title: b.title, text: b.text(S, pl), sign: b.sign }, next));
+      }
+    });
     const ev = (pl.events || []);
     const otherLog = S.log.filter(l => l.r === S.round && l.p !== pl.id && l.p >= 0).slice(-6);
     const items = msgs.map(m => `<p><b>👑 ${esc(m)}</b></p>`).concat(ev.map(m => `<p>${esc(m)}</p>`));
     const inc = pl.lastIncome ? `<p class="muted small">Steuern +${fmt(pl.lastIncome.tax)} · Unterhalt −${fmt(pl.lastIncome.cost)} Gold</p>` : '';
     const others = otherLog.length ? `<h3>Aus dem Reich</h3>${otherLog.map(l => `<p class="small">${esc(l.t)}</p>`).join('')}` : '';
-    const after = () => { closeModal(); if (pl.annualDue) annualDialog(pl); };
-    if (!items.length && !others && !pl.annualDue) return;
-    if (!items.length && !others) { after(); return; }
-    modal(`<h2>${SK.seasonName(S)} ${SK.year(S)}</h2>${items.join('')}${inc}${others}
-      <div class="actions"><button class="btn primary" data-m="ok">Weiter</button></div>`, after);
+    if (items.length || others) queue.push(next => modal(`<h2>${SK.seasonName(S)} ${SK.year(S)}</h2>${items.join('')}${inc}${others}
+      <div class="actions"><button class="btn primary" data-m="ok">Weiter</button></div>`, () => { closeModal(); next(); }));
+    if (pl.offer) queue.push(next => {
+      const o = pl.offer;
+      AUDIO.play('page');
+      modal(`<div class="head row"><span style="font-size:30px">📜</span><h2>Ein Bote des Rates von ${SK.C[o.city].name}</h2></div>
+        <p><i>„Ratsherr ${esc(o.giver)} lässt ausrichten: Die Stadt braucht <b>${o.qty} Last ${SK.G[o.good].icon} ${SK.G[o.good].name}</b> bis zum ${SK.SEASONS[(o.deadline) % 4]} ${SK.START_YEAR + Math.floor(o.deadline / 4)}. Der Rat zahlt <b>${fmt(o.reward)} Gulden</b> – und vergisst es nicht.“</i></p>
+        <p class="small muted">Ansehen +${o.rep} bei Erfolg, −3 wenn du die Frist versäumst. Ein Auftrag zur Zeit.</p>
+        <div class="actions"><button class="btn" data-m="no">Ablehnen</button><button class="btn primary" data-m="yes">Annehmen</button></div>`,
+      m => { if (m === 'yes') { SK.acceptQuest(S, pl); AUDIO.play('coin'); } else SK.declineQuest(S, pl); closeModal(); save(); render(); next(); });
+      $modal.querySelector('.sheet').classList.add('letter');
+    });
+    if (pl.annualDue) queue.push(() => annualDialog(pl));
+    const run = () => { const f = queue.shift(); if (f) f(run); };
+    run();
   }
 
   function annualDialog(pl) {
@@ -198,6 +303,7 @@
 
   function endTurn() {
     const pl = me();
+    AUDIO.play('turn');
     if (pl.annualDue) { annualDialog(pl); toast('Erst den Jahresabschluss erledigen.'); return; }
     const moving = pl.ships.filter(sh => sh.at && !SK.isFrozen(S, sh.at)).length;
     const doEnd = () => { closeModal(); SK.endTurn(S); save(); startTurn(); };
@@ -209,11 +315,12 @@
   }
 
   function gameOver() {
+    AUDIO.play('fanfare');
     const ranked = S.players.slice().sort((a, b) => SK.score(S, b) - SK.score(S, a));
     clearSave();
     $app.onclick = null;
-    $app.innerHTML = `<div class="title"><h1 style="font-size:40px">${esc(S.players[S.winner].name)} siegt!</h1>
-      <div class="sub">${S.players[S.winner].rank === SK.RANKS.length - 1 ? 'Zum Reichsfürsten erhoben.' : `Nach ${S.years} Jahren das größte Haus im Reich.`}</div>
+    $app.innerHTML = `<div class="title">${scene(true)}<div class="title-dim"></div><h1 style="font-size:40px">${esc(S.players[S.winner].name)} siegt!</h1>
+      <div class="sub">${esc(STORY.epilogue(S, S.players.find(p => !p.ai && p.id === S.winner) || S.players.find(p => !p.ai) || S.players[S.winner]))}</div>
       <div class="sheet"><table><tr><th>#</th><th>Name</th><th>Rang</th><th class="num">Vermögen</th></tr>
       ${ranked.map((p, i) => `<tr><td>${i + 1}</td><td>${esc(p.name)}</td><td>${SK.RANKS[p.rank].name}</td><td class="num">${fmt(SK.worth(S, p))}</td></tr>`).join('')}
       </table></div><button class="btn primary" id="again">Neues Spiel</button></div>`;
@@ -229,6 +336,7 @@
       <header class="top">${seal(pl)}
         <div class="who"><b>${esc(pl.name)}</b><small>${SK.RANKS[pl.rank].name} · ${SK.seasonName(S)} ${SK.year(S)}</small></div>
         <div class="gold">${fmt(pl.gold)} 🪙<small>Ansehen ${pl.ansehen}</small></div>
+        <button class="iconbtn" data-a="music" aria-label="Musik">${AUDIO.music ? '🎵' : '🔇'}</button>
         <button class="endturn" data-a="end">Zug ▸</button>
       </header>
       <main>${body}</main>
@@ -251,63 +359,137 @@
     'M432,372 L460,364 L470,396 L446,410 L428,396 Z',
     'M520,398 L534,394 L538,408 L524,412 Z',
   ];
+  // Animationen laufen über Neuzeichnen hinweg weiter: Phase aus der Uhr
+  const phase = sec => `animation-delay:-${((performance.now() / 1000) % sec).toFixed(2)}s`;
+  // weicher Pfad durch Punkte
+  function smooth(pts) {
+    if (pts.length === 2) {
+      const [a, b] = pts, mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, dx = b[0] - a[0], dy = b[1] - a[1];
+      const k = 0.12;                       // leichte Kurve
+      return `M${a[0]},${a[1]} Q${mx - dy * k},${my + dx * k} ${b[0]},${b[1]}`;
+    }
+    let d = `M${pts[0][0]},${pts[0][1]}`;
+    for (let i = 1; i < pts.length - 1; i++) {
+      const m = [(pts[i][0] + pts[i + 1][0]) / 2, (pts[i][1] + pts[i + 1][1]) / 2];
+      d += ` Q${pts[i][0]},${pts[i][1]} ${i === pts.length - 2 ? pts[i + 1][0] + ',' + pts[i + 1][1] : m[0] + ',' + m[1]}`;
+    }
+    return d;
+  }
+  function along(pts, f) {                 // Punkt bei Anteil f der Strecke
+    const seg = []; let total = 0;
+    for (let i = 1; i < pts.length; i++) { const l = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); seg.push(l); total += l; }
+    let want = total * f;
+    for (let i = 0; i < seg.length; i++) {
+      if (want <= seg[i]) { const t = want / seg[i]; return [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * t, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * t, pts[i + 1][0] - pts[i][0]]; }
+      want -= seg[i];
+    }
+    const n = pts.length - 1; return [pts[n][0], pts[n][1], pts[n][0] - pts[n - 1][0]];
+  }
+  const shipOnMap = (color, x, y, dx, cls, extra) => `<g transform="translate(${x.toFixed(1)},${y.toFixed(1)})"><g class="bob" style="${phase(3.2)}"><g transform="scale(${dx < 0 ? -1 : 1},1) translate(-15,-24)" ${extra || ''}>${shipSvg(color, 30)}</g></g></g>`;
+
   function viewMap(pl) {
     const sel = ui.city && SK.C[ui.city];
-    let svg = `<svg class="map" viewBox="0 0 1000 640" role="img" aria-label="Seekarte">
+    const sending = ui.send && pl.ships.find(x => x.id === ui.send);
+    const winter = SK.season(S) === 3;
+    let svg = `<svg class="map ${sending ? 'sending' : ''}" viewBox="0 0 1000 640" role="img" aria-label="Seekarte">
       <defs>
-        <radialGradient id="sea" cx="45%" cy="45%" r="75%"><stop offset="0" stop-color="#8fb7c6"/><stop offset="1" stop-color="#4f7f96"/></radialGradient>
-        <linearGradient id="land" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#efe0b9"/><stop offset="1" stop-color="#d9c08a"/></linearGradient>
-        <filter id="sh" x="-5%" y="-5%" width="110%" height="110%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#2b3d46" flood-opacity=".45"/></filter>
-        <pattern id="waves" width="40" height="18" patternUnits="userSpaceOnUse"><path d="M0 9 Q10 3 20 9 T40 9" fill="none" stroke="#ffffff" stroke-opacity=".12" stroke-width="1.4"/></pattern>
+        <radialGradient id="sea" cx="45%" cy="45%" r="75%"><stop offset="0" stop-color="${winter ? '#a4bfca' : '#8fbccb'}"/><stop offset="1" stop-color="${winter ? '#5f7f8f' : '#3f7590'}"/></radialGradient>
+        <linearGradient id="land" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1e3bf"/><stop offset="1" stop-color="#d6bd85"/></linearGradient>
+        <radialGradient id="glint" r=".5"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+        <filter id="sh" x="-5%" y="-5%" width="110%" height="110%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#1e3a48" flood-opacity=".5"/></filter>
+        <filter id="blur"><feGaussianBlur stdDeviation="14"/></filter>
+        <pattern id="waves" width="46" height="20" patternUnits="userSpaceOnUse"><path d="M0 10 Q11.5 3 23 10 T46 10" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="1.5"/></pattern>
+        <pattern id="waves2" width="70" height="34" patternUnits="userSpaceOnUse"><path d="M0 17 Q17.5 9 35 17 T70 17" fill="none" stroke="#fff" stroke-opacity=".09" stroke-width="2"/></pattern>
+        <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><line x1="0" y1="0" x2="0" y2="8" stroke="#8a6a3a" stroke-opacity=".12" stroke-width="2"/></pattern>
+        <clipPath id="landclip">${LAND.map(d => `<path d="${d}"/>`).join('')}</clipPath>
       </defs>
-      <rect width="1000" height="640" fill="url(#sea)"/><rect width="1000" height="640" fill="url(#waves)"/>
-      ${SK.season(S) === 3 ? '<path d="M560,0 L1000,0 L1000,330 L880,320 L780,240 L640,180 L600,120 Z" fill="#ffffff" fill-opacity=".38"/>' : ''}
-      <g filter="url(#sh)">${LAND.map(d => `<path d="${d}" fill="url(#land)" stroke="#8a6a3a" stroke-width="1.5"/>`).join('')}</g>
-      <g fill="#7c6a45" opacity=".55" font-size="15" font-style="italic">
-        <text x="150" y="380">Nordsee</text><text x="660" y="380">Ostsee</text><text x="380" y="80" font-size="22">Norwegen · Schweden</text>
+      <rect width="1000" height="640" fill="url(#sea)"/>
+      <g class="anim-waves" style="${phase(9)}"><rect x="-70" y="-34" width="1140" height="720" fill="url(#waves2)"/></g>
+      <g class="anim-waves2" style="${phase(6)}"><rect x="-46" y="-20" width="1100" height="700" fill="url(#waves)"/></g>
+      <g class="anim-glint" style="${phase(14)}"><ellipse cx="300" cy="420" rx="120" ry="40" fill="url(#glint)"/><ellipse cx="680" cy="250" rx="90" ry="30" fill="url(#glint)"/></g>
+      ${winter ? '<path d="M560,0 L1000,0 L1000,330 L880,320 L780,240 L640,180 L600,120 Z" fill="#fff" fill-opacity=".45" filter="url(#blur)"/>' : ''}
+      <g filter="url(#sh)">${LAND.map(d => `<path d="${d}" fill="url(#land)" stroke="#7d5f33" stroke-width="1.6"/>`).join('')}</g>
+      <rect width="1000" height="640" fill="url(#hatch)" clip-path="url(#landclip)"/>
+      ${LAND.map(d => `<path d="${d}" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="5" transform="translate(0,2)" clip-path="url(#landclip)"/>`).join('')}
+      <g class="deco" fill="#6d5a37" opacity=".5" font-style="italic">
+        <text x="150" y="380" font-size="18" letter-spacing="3">Mare Germanicum</text><text x="650" y="372" font-size="18" letter-spacing="3">Mare Balticum</text>
+        <text x="330" y="90" font-size="22" letter-spacing="6">NORWEGEN · SCHWEDEN</text><text x="820" y="560" font-size="18" letter-spacing="4">LIVLAND</text><text x="120" y="610" font-size="16" letter-spacing="4">FLANDERN</text>
       </g>
-      <g transform="translate(920,560)" opacity=".75"><circle r="32" fill="#f3e6c8" stroke="#8a6a3a"/><path d="M0,-28 L6,0 L0,28 L-6,0 Z" fill="#9e2a1f"/><path d="M-28,0 L0,-6 L28,0 L0,6 Z" fill="#5b4630"/><text y="-34" text-anchor="middle" font-size="13" fill="#5b4630">N</text></g>`;
-    // Reiseroute des gewählten Schiffs
-    if (ui.send) {
-      const sh = pl.ships.find(x => x.id === ui.send);
-      if (sh && sh.at) SK.CITIES.forEach(c => {
-        if (c.id === sh.at) return;
-        const frozen = SK.isFrozen(S, c.id) || SK.isFrozen(S, sh.at);
-        svg += `<line x1="${SK.C[sh.at].x}" y1="${SK.C[sh.at].y}" x2="${c.x}" y2="${c.y}" stroke="${frozen ? '#9aa' : '#2a1d12'}" stroke-opacity=".35" stroke-dasharray="6 6" stroke-width="2"/>`;
+      <g class="anim-gulls" style="${phase(40)}" stroke="#2b3d46" stroke-opacity=".55" stroke-width="2" fill="none">
+        <path d="M0,0 q6,-6 12,0 q6,-6 12,0"/><path d="M30,14 q5,-5 10,0 q5,-5 10,0"/>
+      </g>
+      <g opacity=".55" transform="translate(150,300)"><path d="M0,0 q20,-26 40,0 q20,-26 40,0" fill="none" stroke="#2f5a6c" stroke-width="5" stroke-linecap="round"/><circle cx="84" cy="-4" r="5" fill="#2f5a6c"/><text x="-10" y="28" font-size="12" fill="#2f5a6c" font-style="italic">hic sunt dracones</text></g>`;
+
+    // Seerouten zum Losschicken
+    if (sending && sending.at) {
+      const from = sending.at, cargoVal = SK.load(sending.cargo) > 0;
+      const offers = SK.CITIES.filter(c => c.id !== from).map(c => {
+        const frozen = SK.isFrozen(S, c.id) || SK.isFrozen(S, from);
+        let value = 0;
+        if (cargoVal) SK.GOODS.forEach(g => { if (sending.cargo[g.id]) value += SK.quote(S, c.id, g.id, sending.cargo[g.id], true).sum; });
+        return { c, frozen, value, t: SK.travelTime(sending, from, c.id) };
+      });
+      const best = cargoVal ? offers.filter(o => !o.frozen).sort((a, b) => b.value / b.t - a.value / a.t)[0] : null;
+      offers.forEach(o => {
+        const d = smooth(SK.route(from, o.c.id));
+        svg += `<path d="${d}" class="route ${o.frozen ? 'frozen' : ''} ${o === best ? 'best' : ''}" style="${phase(1.2)}"/>`;
+      });
+      offers.forEach(o => {
+        const w = cargoVal ? 92 : 54, side = o.c.id === 'visby';
+        const x = side ? o.c.x + 30 + w / 2 : o.c.x, y = side ? o.c.y : o.c.y - 46;
+        svg += `<g class="badge ${o.frozen ? 'frozen' : ''} ${o === best ? 'best' : ''}" data-city="${o.c.id}" transform="translate(${x - w / 2},${y - 15})">
+          <rect width="${w}" height="28" rx="14"/><text x="${w / 2}" y="19" text-anchor="middle">${o.frozen ? '❄ vereist' : `⏳${o.t}${cargoVal ? ' · ' + fmt(o.value) : ''}`}</text></g>`;
       });
     }
-    // Schiffe auf See
+    // eigener Auftrag
+    if (pl.quest) {
+      const q = SK.C[pl.quest.city];
+      svg += `<g transform="translate(${q.x - 34},${q.y - 6})" class="quest-mark"><circle r="13" fill="#f6e7b8" stroke="#8a6a3a" stroke-width="2"/><text y="5" text-anchor="middle" font-size="15">📜</text></g>`;
+    }
+    // Schiffe auf See (alle Häuser)
     S.players.forEach(p => p.ships.forEach(sh => {
       if (sh.at) return;
-      const a = SK.C[sh.from || p.home], b = SK.C[sh.to], total = SK.travelTime(sh, a.id, b.id);
+      const pts = SK.route(sh.from || p.home, sh.to), total = SK.travelTime(sh, sh.from || p.home, sh.to);
       const f = Math.min(0.85, Math.max(0.15, 1 - sh.left / (total + 0.5)));
-      const x = a.x + (b.x - a.x) * f, y = a.y + (b.y - a.y) * f;
-      if (p === pl) svg += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${p.color}" stroke-opacity=".55" stroke-dasharray="3 7" stroke-width="2.5"/>`;
-      svg += `<g transform="translate(${x - 14},${y - 18})" opacity="${p === pl ? 1 : .7}">${shipSvg(p.color, 28)}</g>`;
+      const [x, y, dx] = along(pts, f);
+      if (p === pl) svg += `<path d="${smooth(pts)}" class="myroute" stroke="${p.color}"/>`;
+      const fresh = ui.anim && ui.anim.ship === sh.id && performance.now() - ui.anim.t < 400;
+      if (fresh) {
+        const steps = 12, kp = [];
+        for (let i = 0; i <= steps; i++) kp.push(along(pts, f * i / steps));
+        const mp = 'M' + kp.map(q => q[0].toFixed(1) + ',' + q[1].toFixed(1)).join(' L');
+        svg += `<g><g class="bob" style="${phase(3.2)}"><g transform="scale(${dx < 0 ? -1 : 1},1) translate(-15,-24)">${shipSvg(p.color, 30)}</g></g>
+          <animateMotion dur="1.8s" fill="freeze" path="${mp}" calcMode="spline" keyTimes="0;1" keySplines=".4 0 .2 1"/></g>`;
+      } else svg += `<g opacity="${p === pl ? 1 : .75}">${shipOnMap(p.color, x, y, dx)}</g>`;
     }));
     // Städte
     SK.CITIES.forEach(c => {
       const homeOf = S.players.find(p => p.home === c.id);
       const mine = pl.ships.filter(sh => sh.at === c.id).length;
-      const isSel = ui.city === c.id;
       const frozen = SK.isFrozen(S, c.id);
-      svg += `<g class="city" data-city="${c.id}" transform="translate(${c.x},${c.y})">
-        <circle r="34" fill="transparent"/>
-        ${isSel ? '<circle r="22" fill="none" stroke="#f1c75b" stroke-width="4"/>' : ''}
-        ${homeOf ? `<path d="M-2,-30 L-2,-8 M-2,-30 L14,-25 L-2,-20" stroke="#3b2412" stroke-width="2" fill="${homeOf.color}"/>` : ''}
-        <circle r="11" fill="${frozen ? '#dfeef5' : '#f8eed6'}" stroke="#3b2412" stroke-width="2.5"/>
-        <rect x="-5" y="-5" width="10" height="10" fill="${pl.kontore[c.id] ? pl.color : '#8a6a3a'}" transform="rotate(45)"/>
-        <text y="28" text-anchor="middle" font-size="19" fill="#2b1d10" stroke="#f3e6c8" stroke-width="4" paint-order="stroke">${c.name}${frozen ? ' ❄' : ''}</text>
-        ${mine ? `<g transform="translate(10,-34)">${shipSvg(pl.color, 26)}${mine > 1 ? `<text x="24" y="10" font-size="14" fill="#2b1d10">${mine}</text>` : ''}</g>` : ''}
+      svg += `<g class="city ${ui.city === c.id ? 'sel' : ''}" data-city="${c.id}" transform="translate(${c.x},${c.y})">
+        <circle r="36" fill="transparent"/>
+        ${ui.city === c.id && !sending ? `<circle r="20" class="pulse" style="${phase(2)}"/>` : ''}
+        ${homeOf ? `<g class="flag" style="${phase(2.4)}"><path d="M-2,-34 L-2,-8" stroke="#3b2412" stroke-width="2"/><path d="M-2,-34 Q8,-36 16,-30 Q8,-26 -2,-24 Z" fill="${homeOf.color}" stroke="#3b2412" stroke-width="1"/></g>` : ''}
+        <circle r="12" fill="${frozen ? '#e3f1f7' : '#fbf2dc'}" stroke="#3b2412" stroke-width="2.5"/>
+        <path d="M-6,4 L-6,-2 L-3,-5 L0,-2 L3,-6 L6,-2 L6,4 Z" fill="${pl.kontore[c.id] ? pl.color : '#7d5f33'}"/>
+        <text y="30" text-anchor="middle" font-size="19" fill="#2b1d10" stroke="#f3e6c8" stroke-width="4" paint-order="stroke">${c.name}${frozen ? ' ❄' : ''}</text>
+        ${mine && !sending ? `<g transform="translate(26,-12)">${shipOnMap(pl.color, 0, 0, 1)}${mine > 1 ? `<text x="14" y="4" font-size="14" fill="#2b1d10" stroke="#f3e6c8" stroke-width="3" paint-order="stroke">×${mine}</text>` : ''}</g>` : ''}
       </g>`;
     });
-    svg += '</svg>';
+    // Windrose und Kartusche
+    svg += `<g transform="translate(925,565)" class="rose"><circle r="40" fill="#f3e6c8" stroke="#7d5f33" stroke-width="2"/><circle r="31" fill="none" stroke="#7d5f33" stroke-dasharray="2 4"/>
+        <path d="M0,-36 L7,0 L0,36 L-7,0 Z" fill="#9e2a1f"/><path d="M-36,0 L0,-7 L36,0 L0,7 Z" fill="#5b4630"/><path d="M-20,-20 L3,-3 L20,20 L-3,3 Z" fill="#c9962b" opacity=".7"/>
+        <text y="-44" text-anchor="middle" font-size="14" fill="#5b4630">N</text></g>
+      <g transform="translate(786,18)"><rect width="196" height="54" rx="6" fill="#f3e6c8" stroke="#7d5f33" stroke-width="2"/><rect x="5" y="5" width="186" height="44" rx="4" fill="none" stroke="#7d5f33" stroke-opacity=".5"/>
+        <text x="98" y="26" text-anchor="middle" font-size="17" fill="#2b1d10">Carta Hanseatica</text><text x="98" y="42" text-anchor="middle" font-size="12" fill="#5b4630" font-style="italic">${SK.seasonName(S)} Anno ${SK.year(S)}</text></g>
+    </svg>`;
 
     let panel = '';
-    if (ui.send) {
-      const sh = pl.ships.find(x => x.id === ui.send);
-      panel = `<div class="banner"><span>Wähle das Ziel für die „${esc(sh.name)}“</span><button class="btn sm" data-a="cancelsend">Abbrechen</button></div>`;
+    if (sending) {
+      panel = `<div class="banner"><span>⛵ Wähle das Ziel für die „${esc(sending.name)}“${SK.load(sending.cargo) ? ' – die Zahl zeigt den Erlös der Ladung dort' : ''}</span><button class="btn sm" data-a="cancelsend">Abbrechen</button></div>`;
     }
+    panel += questCard(pl);
     if (sel) {
       const prices = SK.GOODS.map(g => {
         const p = SK.sellPrice(S, sel.id, g.id), rel = p / g.base;
@@ -327,6 +509,14 @@
         </div></div>`;
     }
     return `<div class="wide2"><div class="sheet mapwrap">${svg}</div><div>${panel}${legend(pl)}</div></div>`;
+  }
+  function questCard(pl) {
+    const q = pl.quest;
+    if (!q) return '';
+    const left = q.deadline - S.round + 1;
+    return `<div class="sheet quest"><div class="spread"><h2>📜 Auftrag</h2><span class="chip ${left <= 1 ? 'no' : ''}">noch ${left} ${left === 1 ? 'Jahreszeit' : 'Jahreszeiten'}</span></div>
+      <p class="small">Ratsherr ${esc(q.giver)} aus <b>${SK.C[q.city].name}</b> erwartet <b>${q.qty} Last ${SK.G[q.good].icon} ${SK.G[q.good].name}</b>.</p>
+      <p class="small muted">Lohn: ${fmt(q.reward)} 🪙 und Ansehen +${q.rep}. Abliefern im Markt von ${SK.C[q.city].name}.</p></div>`;
   }
   function legend(pl) {
     const sea = pl.ships.filter(sh => !sh.at);
@@ -392,7 +582,7 @@
           ${other ? `<button class="btn sm" data-a="move" data-g="${g.id}" ${goods[g.id] ? '' : 'disabled'} title="umladen">⇄</button>` : ''}
         </div></div>`;
     }).join('');
-    return `<div class="sheet">
+    return `${pl.quest ? questCard(pl) : ''}<div class="sheet">
         <div class="spread"><h2>Markt ${C.name}</h2>
           <select data-range="city">${cities.map(c => `<option value="${c.id}" ${c.id === city ? 'selected' : ''}>${c.name}</option>`).join('')}</select></div>
         <div class="row" style="margin:6px 0 4px">${holders.map(x => `<button class="btn sm ${JSON.stringify(x) === JSON.stringify(h) ? 'primary' : ''}" data-a="holder" data-h='${JSON.stringify(x)}'>${holderLabel(pl, x)}</button>`).join('')}</div>
@@ -400,6 +590,7 @@
         <div class="bar"><i style="width:${100 * used / cap}%"></i></div>
         <div class="mrow head"><div>Ware</div><div class="num">Kauf</div><div class="num">Verk.</div><div class="num">Lager</div><div></div></div>${rows}
         <div class="row" style="margin-top:10px;justify-content:flex-end">
+          ${pl.quest && pl.quest.city === city ? `<button class="btn primary" data-a="deliver" ${SK.canDeliver(S, pl, h) ? '' : 'disabled'}>📜 ${pl.quest.qty} ${SK.G[pl.quest.good].name} abliefern (${fmt(pl.quest.reward)} 🪙)</button>` : ''}
           <button class="btn" data-a="sellall" ${used ? '' : 'disabled'}>Alles verkaufen</button>
           ${h.kind === 'ship' && !SK.isFrozen(S, city) ? `<button class="btn primary" data-a="send" data-ship="${h.id}">Lossegeln ▸</button>` : ''}
         </div>
@@ -463,11 +654,15 @@
       <div class="sheet"><h2>Dein Aufstieg</h2><p class="small muted">Vermögen: ${fmt(SK.worth(S, pl))} 🪙 (Gold, Waren, Schiffe, Land und Bauten)</p><ul class="ladder">${ladder}</ul></div>
       <div><div class="sheet"><h2>Die Häuser des Reiches</h2>${table}<p class="small muted">Noch ${Math.ceil(left / 4)} Jahre bis zum Spielende.</p></div>
       <div class="sheet"><h2>Chronik</h2><div class="log">${logs}</div></div>
-      <div class="sheet"><div class="row"><button class="btn" data-a="menu">Hauptmenü</button><span class="small muted">Das Spiel wird automatisch gespeichert.</span></div></div></div></div>`;
+      <div class="sheet"><h2>Einstellungen</h2><div class="row">
+        <button class="btn" data-a="music">${AUDIO.music ? '🎵 Musik an' : '🔇 Musik aus'}</button>
+        <button class="btn" data-a="sfx">${AUDIO.sfx ? '🔔 Geräusche an' : '🔕 Geräusche aus'}</button>
+        <button class="btn" data-a="menu">Hauptmenü</button></div>
+        <p class="small muted">Das Spiel wird automatisch gespeichert. Aufträge erfüllt: ${pl.questsDone}.</p></div></div></div>`;
   }
 
   // ---------- Eingaben ----------
-  function err(e) { if (e && typeof e === 'string') toast(e); }
+  function err(e) { if (e && typeof e === 'string') { toast(e); AUDIO.play('error'); } }
   function onRange(el) {
     const pl = me();
     if (el.dataset.range === 'tax') { SK.setTax(pl, +el.value); save(); render(); toast(`Steuersatz ${pl.tax} %`); }
@@ -488,9 +683,13 @@
       case 'end': endTurn(); return;
       case 'tomarket': ui.tab = 'markt'; ui.city = t.dataset.city; ui.holder = t.dataset.ship ? { kind: 'ship', id: t.dataset.ship } : null; break;
       case 'holder': ui.holder = JSON.parse(t.dataset.h); break;
-      case 'buy': err(SK.buy(S, pl, ui.holder, t.dataset.g, +t.dataset.q)); break;
-      case 'sell': err(SK.sell(S, pl, ui.holder, t.dataset.g, +t.dataset.q)); break;
-      case 'sellall': SK.GOODS.forEach(g => { const n = SK.holderGoods(pl, ui.holder)[g.id]; if (n) SK.sell(S, pl, ui.holder, g.id, n); }); break;
+      case 'buy': { const e2 = SK.buy(S, pl, ui.holder, t.dataset.g, +t.dataset.q); err(e2); if (!e2) AUDIO.play('coin'); break; }
+      case 'sell': { const e2 = SK.sell(S, pl, ui.holder, t.dataset.g, +t.dataset.q); err(e2); if (!e2) AUDIO.play('sell'); break; }
+      case 'sellall': SK.GOODS.forEach(g => { const n = SK.holderGoods(pl, ui.holder)[g.id]; if (n) SK.sell(S, pl, ui.holder, g.id, n); }); AUDIO.play('sell'); break;
+      case 'deliver': { const q = pl.quest, e2 = SK.deliverQuest(S, pl, ui.holder); err(e2);
+        if (!e2) { AUDIO.play('fanfare'); toast(`Auftrag erfüllt! +${fmt(q.reward)} Gold, Ansehen +${q.rep}.`); } break; }
+      case 'music': AUDIO.setMusic(!AUDIO.music); break;
+      case 'sfx': AUDIO.setSfx(!AUDIO.sfx); break;
       case 'move': {
         const city = ui.city, hs = [];
         if (pl.kontore[city]) hs.push({ kind: 'kontor', city });
@@ -498,13 +697,13 @@
         const other = hs.find(x => JSON.stringify(x) !== JSON.stringify(ui.holder));
         err(SK.transfer(pl, ui.holder, other, t.dataset.g, 10)); break;
       }
-      case 'send': ui.send = t.dataset.ship; ui.tab = 'karte'; toast('Tippe auf die Zielstadt.'); break;
+      case 'send': ui.send = t.dataset.ship; ui.tab = 'karte'; toast('Tippe auf die Zielstadt oder ihr Schild.'); save(); render(); window.scrollTo({ top: 0, behavior: 'smooth' }); return;
       case 'cancelsend': ui.send = null; break;
       case 'kontor': err(SK.buyKontor(S, pl, t.dataset.city)); break;
       case 'arm': err(SK.arm(S, pl, t.dataset.ship)); break;
       case 'sellship': err(SK.sellShip(S, pl, t.dataset.ship)); break;
-      case 'buyship': { const e2 = SK.buyShip(S, pl, t.dataset.type); err(e2); if (!e2) toast('Ein neues Schiff liegt in ' + SK.C[pl.home].name + '.'); break; }
-      case 'build': err(SK.build(S, pl, t.dataset.b)); break;
+      case 'buyship': { const e2 = SK.buyShip(S, pl, t.dataset.type); err(e2); if (!e2) { AUDIO.play('build'); toast('Ein neues Schiff liegt in ' + SK.C[pl.home].name + '.'); } break; }
+      case 'build': { const e2 = SK.build(S, pl, t.dataset.b); err(e2); if (!e2) AUDIO.play('build'); break; }
       case 'land': err(SK.buyLand(S, pl, +t.dataset.n)); break;
       case 'hire': err(SK.hire(S, pl, +t.dataset.n)); break;
       case 'donate': { const before = pl.ansehen; err(SK.donate(S, pl, +t.dataset.n)); if (pl.ansehen > before) toast(`Ansehen +${pl.ansehen - before}`); break; }
@@ -536,6 +735,8 @@
     const e = SK.sail(S, pl, shipId, city);
     if (e) { toast(e); return; }
     ui.send = null; ui.city = city;
+    ui.anim = { ship: shipId, t: performance.now() };
+    AUDIO.play('sail');
     save(); render();
     toast(`„${sh.name}“ segelt nach ${SK.C[city].name} – ${n} ${n === 1 ? 'Jahreszeit' : 'Jahreszeiten'}.`);
   }
