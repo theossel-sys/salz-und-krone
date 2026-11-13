@@ -32,18 +32,13 @@
     };
   }
   function closeModal() { $modal.hidden = true; $modal.innerHTML = ''; $modal.onclick = null; }
-  const seal = (pl, size) => `<div class="seal" style="background:${pl.color};${size ? `width:${size}px;height:${size}px` : ''}">${esc(pl.name.charAt(0).toUpperCase())}</div>`;
+  const seal = (pl, size) => `<div class="arms">${ART.arms(pl.name, pl.color, size || 40)}</div>`;
   const goodChip = (g, n) => `<span class="chip">${SK.G[g].icon} ${n}</span>`;
   const cargoChips = goods => {
     const c = SK.GOODS.filter(g => goods[g.id] > 0).map(g => goodChip(g.id, goods[g.id]));
     return c.length ? c.join('') : '<span class="muted small">leer</span>';
   };
-  const shipSvg = (color, w) => `<svg viewBox="0 0 40 40" width="${w || 40}" height="${w || 40}" aria-hidden="true">
-      <path d="M20 4 L20 26" stroke="#4a3220" stroke-width="2"/>
-      <path d="M21 6 Q33 14 21 24 Z" fill="#fbf1d8" stroke="#8a6a3a" stroke-width="1"/>
-      <rect x="20" y="9" width="7" height="4" fill="${color}"/>
-      <path d="M5 26 L35 26 L30 34 L10 34 Z" fill="#6b4523" stroke="#3b2412" stroke-width="1.2"/>
-    </svg>`;
+  const shipSvg = (color, w, type) => ART.ship(type || 'kogge', color, w || 40);
   function holderLabel(pl, h) {
     if (h.kind === 'ship') { const sh = pl.ships.find(x => x.id === h.id); return `${SK.SHIPS[sh.type].name} „${esc(sh.name)}“`; }
     return h.city === pl.home ? 'Heimatlager' : 'Kontor';
@@ -385,8 +380,9 @@
     }
     const n = pts.length - 1; return [pts[n][0], pts[n][1], pts[n][0] - pts[n - 1][0]];
   }
-  const shipOnMap = (color, x, y, dx, cls, extra) => `<g transform="translate(${x.toFixed(1)},${y.toFixed(1)})"><g class="bob" style="${phase(3.2)}"><g transform="scale(${dx < 0 ? -1 : 1},1) translate(-15,-24)" ${extra || ''}>${shipSvg(color, 30)}</g></g></g>`;
+  const shipOnMap = (color, x, y, dx, type) => `<g transform="translate(${x.toFixed(1)},${y.toFixed(1)})"><g class="bob" style="${phase(3.2)}"><g transform="scale(${dx < 0 ? -1 : 1},1) translate(-17,-28)">${shipSvg(color, 34, type)}</g></g></g>`;
 
+  const biggest = (pl, city) => { const t = pl.ships.filter(sh => sh.at === city).map(sh => sh.type); return t.includes('holk') ? 'holk' : t.includes('kogge') ? 'kogge' : 'schnigge'; };
   function viewMap(pl) {
     const sel = ui.city && SK.C[ui.city];
     const sending = ui.send && pl.ships.find(x => x.id === ui.send);
@@ -458,9 +454,9 @@
         const steps = 12, kp = [];
         for (let i = 0; i <= steps; i++) kp.push(along(pts, f * i / steps));
         const mp = 'M' + kp.map(q => q[0].toFixed(1) + ',' + q[1].toFixed(1)).join(' L');
-        svg += `<g><g class="bob" style="${phase(3.2)}"><g transform="scale(${dx < 0 ? -1 : 1},1) translate(-15,-24)">${shipSvg(p.color, 30)}</g></g>
+        svg += `<g><g class="bob" style="${phase(3.2)}"><g transform="scale(${dx < 0 ? -1 : 1},1) translate(-17,-28)">${shipSvg(p.color, 34, sh.type)}</g></g>
           <animateMotion dur="1.8s" fill="freeze" path="${mp}" calcMode="spline" keyTimes="0;1" keySplines=".4 0 .2 1"/></g>`;
-      } else svg += `<g opacity="${p === pl ? 1 : .75}">${shipOnMap(p.color, x, y, dx)}</g>`;
+      } else svg += `<g opacity="${p === pl ? 1 : .75}">${shipOnMap(p.color, x, y, dx, sh.type)}</g>`;
     }));
     // Städte
     SK.CITIES.forEach(c => {
@@ -474,7 +470,7 @@
         <circle r="12" fill="${frozen ? '#e3f1f7' : '#fbf2dc'}" stroke="#3b2412" stroke-width="2.5"/>
         <path d="M-6,4 L-6,-2 L-3,-5 L0,-2 L3,-6 L6,-2 L6,4 Z" fill="${pl.kontore[c.id] ? pl.color : '#7d5f33'}"/>
         <text y="30" text-anchor="middle" font-size="19" fill="#2b1d10" stroke="#f3e6c8" stroke-width="4" paint-order="stroke">${c.name}${frozen ? ' ❄' : ''}</text>
-        ${mine && !sending ? `<g transform="translate(26,-12)">${shipOnMap(pl.color, 0, 0, 1)}${mine > 1 ? `<text x="14" y="4" font-size="14" fill="#2b1d10" stroke="#f3e6c8" stroke-width="3" paint-order="stroke">×${mine}</text>` : ''}</g>` : ''}
+        ${mine && !sending ? `<g transform="translate(26,-12)">${shipOnMap(pl.color, 0, 0, 1, biggest(pl, c.id))}${mine > 1 ? `<text x="14" y="4" font-size="14" fill="#2b1d10" stroke="#f3e6c8" stroke-width="3" paint-order="stroke">×${mine}</text>` : ''}</g>` : ''}
       </g>`;
     });
     // Windrose und Kartusche
@@ -497,7 +493,7 @@
       }).join(' ');
       const ships = pl.ships.filter(sh => sh.at === sel.id);
       const owner = S.players.find(p => p.home === sel.id);
-      panel += `<div class="sheet"><div class="spread"><h2>${sel.name}${SK.isFrozen(S, sel.id) ? ' – zugefroren' : ''}</h2>
+      panel += `<div class="sheet"><div class="skyline">${ART.skyline(sel.id, 600, 110)}</div><div class="spread"><h2>${sel.name}${SK.isFrozen(S, sel.id) ? ' – zugefroren' : ''}</h2>
           ${owner ? `<span class="chip">${owner === pl ? 'Deine Heimat' : 'Heimat von ' + esc(owner.name)}</span>` : ''}</div>
         <p class="small muted">Erzeugt: ${sel.p.map(g => SK.G[g].icon + ' ' + SK.G[g].name).join(', ')} · Gefragt: ${sel.d.map(g => SK.G[g].icon + ' ' + SK.G[g].name).join(', ')}</p>
         <div class="row small">${prices}</div>
@@ -530,7 +526,7 @@
     const cards = pl.ships.map(sh => {
       const T = SK.SHIPS[sh.type], used = SK.load(sh.cargo);
       const where = sh.at ? `liegt in ${SK.C[sh.at].name}` : `segelt nach ${SK.C[sh.to].name} · Ankunft in ${sh.left} ${sh.left === 1 ? 'Jahreszeit' : 'Jahreszeiten'}`;
-      return `<div class="ship"><div class="pic">${shipSvg(pl.color, 46)}</div><div>
+      return `<div class="ship"><div class="pic">${shipSvg(pl.color, 52, sh.type)}</div><div>
         <div class="spread"><b>„${esc(sh.name)}“</b><span class="chip">${T.name}${sh.armed ? ' · ⚔️' : ''}</span></div>
         <div class="small muted">${where}</div>
         <div class="cargo">${cargoChips(sh.cargo)}</div>
@@ -545,7 +541,7 @@
     }).join('');
     const shop = Object.keys(SK.SHIPS).map(k => {
       const T = SK.SHIPS[k];
-      return `<div class="stat"><span><b>${T.name}</b> <span class="muted small">${T.cap} Last · ${k === 'schnigge' ? 'schnell' : k === 'holk' ? 'langsam, robust' : 'ausgewogen'} · Unterhalt ${T.upkeep}</span></span>
+      return `<div class="stat shipshop"><span class="row" style="flex-wrap:nowrap">${shipSvg(pl.color, 56, k)}<span><b>${T.name}</b> <span class="muted small">${T.cap} Last · ${k === 'schnigge' ? 'schnell' : k === 'holk' ? 'langsam, robust' : 'ausgewogen'} · Unterhalt ${T.upkeep}</span></span></span>
         <button class="btn sm" data-a="buyship" data-type="${k}" ${pl.gold < T.price ? 'disabled' : ''}>${fmt(T.price)} 🪙</button></div>`;
     }).join('');
     return `<div class="sheet"><h2>Deine Flotte</h2>${cards}</div>
@@ -582,7 +578,7 @@
           ${other ? `<button class="btn sm" data-a="move" data-g="${g.id}" ${goods[g.id] ? '' : 'disabled'} title="umladen">⇄</button>` : ''}
         </div></div>`;
     }).join('');
-    return `${pl.quest ? questCard(pl) : ''}<div class="sheet">
+    return `${pl.quest ? questCard(pl) : ''}<div class="sheet"><div class="skyline">${ART.skyline(city, 600, 90)}</div>
         <div class="spread"><h2>Markt ${C.name}</h2>
           <select data-range="city">${cities.map(c => `<option value="${c.id}" ${c.id === city ? 'selected' : ''}>${c.name}</option>`).join('')}</select></div>
         <div class="row" style="margin:6px 0 4px">${holders.map(x => `<button class="btn sm ${JSON.stringify(x) === JSON.stringify(h) ? 'primary' : ''}" data-a="holder" data-h='${JSON.stringify(x)}'>${holderLabel(pl, x)}</button>`).join('')}</div>

@@ -276,3 +276,12 @@ svg.map.sending .city text { opacity: .85; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; }
 }
+
+/* ---------- Grafik per Code ---------- */
+.arms { flex: none; line-height: 0; filter: drop-shadow(0 2px 2px rgba(0,0,0,.45)); }
+.top .arms svg { display: block; }
+.skyline { margin: -14px -14px 10px; height: auto; line-height: 0; border-radius: var(--radius) var(--radius) 0 0; overflow: hidden;
+  background: linear-gradient(#c9a77a 0%, #ead2a6 60%, #f3e6c8 100%); }
+.skyline svg { display: block; }
+.ship .pic { width: 64px; height: 64px; background: linear-gradient(#a9cfdc, #5c8ea6); }
+.shipshop svg { flex: none; }

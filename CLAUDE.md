@@ -31,5 +31,10 @@ Handel + Herrschaft kombiniert · Hot-Seat 1–4 Spieler + Computergegner · mod
   Messing #E0B24A, Siegelrot #9A2B1E, Tiefsee #1F4E63; Cinzel + Crimson Pro). Artboards: Desktop-Karte mit
   linker Navigationsleiste, Markt iPhone (Kaufen/Verkaufen-Umschalter, Stepper, Abschlussleiste), Story-Brief,
   Titel. Noch NICHT ins Spiel übernommen – wartet auf Feedback des Users.
+- Grafik per Code (Idee aus RetroStoneVC übernommen, eigene Motive): art.js – ART.arms(name,farbe,size) prozedurale
+  Wappen (Teilung + Metall/Farbe + Figur, aus dem Namen geseedet) ersetzen die Buchstaben-Siegel; ART.ship(typ,…)
+  unterscheidet Schnigge/Kogge/Holk (Karte, Flotte, Werft); ART.skyline(stadt,…) Stadtsilhouetten mit
+  Wahrzeichen je Stadt (Lübeck Doppeltürme+Tor, Brügge Belfried, Bergen Speicher, Visby/Reval Mauer …) als Kopfbild
+  in Stadt- und Marktkarte. Galerie-Check per Playwright.
 - Ideen für später: Konvois/Kapitäne, Hansetage/Belagerungen, Heirat & Erbfolge, Musik/SFX, bessere Grafiken,
   KI-Schwierigkeitsstufen.

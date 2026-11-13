@@ -35,6 +35,6 @@ Dein Vater Johan ist mit seiner Flotte auf See geblieben; geblieben sind dir ein
 
 ## Technik
 - `engine.js` – Spiellogik ohne Oberfläche (läuft auch in Node), `ui.js` – Oberfläche, `style.css`
-- `story.js` – Prolog, Kapitel, Briefe, Epilog · `audio.js` – Musik und Geräusche, komplett per Web Audio erzeugt (keine Audiodateien)
+- `story.js` – Prolog, Kapitel, Briefe, Epilog · `art.js` – Wappen, Schiffe und Stadtsilhouetten, per Code gezeichnet (keine Bilddateien) · `audio.js` – Musik und Geräusche, komplett per Web Audio erzeugt (keine Audiodateien)
 - Spielstand automatisch im `localStorage`
 - Test: `node tests/sim.js 5 25` lässt 4 Computergegner 25 Jahre gegeneinander spielen (Balancing)
