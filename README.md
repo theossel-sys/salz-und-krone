@@ -17,6 +17,8 @@ Dein Vater Johan ist mit seiner Flotte auf See geblieben; geblieben sind dir ein
 öffnet ein neues Kapitel – bis zum Epilog. Ein kurzes Intro erzählt den Anfang.
 
 ## Regeln in Kürze
+Beim ersten Spiel führt ein **Tutorial** durch die erste Handelsfahrt; die **Spielanleitung** öffnest du jederzeit mit **?** oben.
+
 - **Runde = Jahreszeit.** Jeder Spieler macht seinen Zug, dann vergeht eine Jahreszeit. Die Zugreihenfolge rotiert.
 - **Handel:** Jede Stadt erzeugt Waren (billig) und fragt andere nach (teuer). Jeder Kauf treibt den Preis, jeder
   Verkauf drückt ihn – große Mengen lohnen sich nur auf verschiedenen Märkten.

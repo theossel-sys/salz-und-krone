@@ -21,6 +21,7 @@
   const me = () => S.players[S.cur];
   function toast(t) {
     $toast.textContent = t; $toast.hidden = false;
+    $toast.classList.toggle('up', !!(typeof tut !== 'undefined' && tut.on));
     clearTimeout(toast.t); toast.t = setTimeout(() => { $toast.hidden = true; }, 2600);
   }
   function modal(html, onClick) {
@@ -142,7 +143,7 @@
           <div class="seg">${[10, 15, 25].map(y => `<button data-years="${y}" class="${setup.years === y ? 'on' : ''}">${y} Jahre</button>`).join('')}</div>
           <p class="muted small">Gewonnen hat, wer zuerst Reichsfürst wird – oder am Ende den höchsten Rang und das größte Vermögen hat. Mehrere Menschen spielen abwechselnd am selben Gerät.</p>
           <div class="actions" style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
-            <span class="row"><button class="btn sm" data-t="music">${AUDIO.music ? '🎵 Musik an' : '🔇 Musik aus'}</button></span>
+            <span class="row"><button class="btn sm" data-t="help">📖 Anleitung</button><button class="btn sm" data-t="music">${AUDIO.music ? '🎵 Musik an' : '🔇 Musik aus'}</button></span>
             <button class="btn primary" data-t="start">Spiel beginnen</button></div>
         </div>
       </div>`;
@@ -161,6 +162,7 @@
       const t = e.target.closest('[data-t]');
       if (!t) return;
       if (t.dataset.t === 'music') { AUDIO.setMusic(!AUDIO.music); title(); return; }
+      if (t.dataset.t === 'help') { handbook(); return; }
       if (t.dataset.t === 'cont') { S = saved; ui.shown = -1; startTurn(); }
       if (t.dataset.t === 'start') {
         const players = setup.players.filter(p => !p.off).map(p => ({ name: p.name.trim() || 'Namenlos', ai: p.ai, home: p.home }));
@@ -251,6 +253,7 @@
       m => { if (m === 'yes') { SK.acceptQuest(S, pl); AUDIO.play('coin'); } else SK.declineQuest(S, pl); closeModal(); save(); render(); next(); });
       $modal.querySelector('.sheet').classList.add('letter');
     });
+    if (S.round === 0 && !tut.on) queue.push(next => tutOffer(next));
     if (pl.annualDue) queue.push(() => annualDialog(pl));
     const run = () => { const f = queue.shift(); if (f) f(run); };
     run();
@@ -331,6 +334,7 @@
       <header class="top">${seal(pl)}
         <div class="who"><b>${esc(pl.name)}</b><small>${SK.RANKS[pl.rank].name} · ${SK.seasonName(S)} ${SK.year(S)}</small></div>
         <div class="gold">${fmt(pl.gold)} 🪙<small>Ansehen ${pl.ansehen}</small></div>
+        <button class="iconbtn help" data-a="help" aria-label="Spielanleitung">?</button>
         <button class="iconbtn" data-a="music" aria-label="Musik">${AUDIO.music ? '🎵' : '🔇'}</button>
         <button class="endturn" data-a="end">Zug ▸</button>
       </header>
@@ -338,6 +342,7 @@
       <nav class="tabs">${TABS.map(t => `<button data-tab="${t[0]}" class="${ui.tab === t[0] ? 'on' : ''}"><span>${t[1]}</span>${t[2]}</button>`).join('')}</nav>`;
     $app.onclick = onClick;
     $app.querySelectorAll('[data-range]').forEach(el => { el.onchange = () => onRange(el); });
+    if (tut.on) setTimeout(tutUpdate, 0);
   }
 
   // ---------- Karte ----------
@@ -653,8 +658,143 @@
       <div class="sheet"><h2>Einstellungen</h2><div class="row">
         <button class="btn" data-a="music">${AUDIO.music ? '🎵 Musik an' : '🔇 Musik aus'}</button>
         <button class="btn" data-a="sfx">${AUDIO.sfx ? '🔔 Geräusche an' : '🔕 Geräusche aus'}</button>
+        <button class="btn" data-a="help">📖 Spielanleitung</button>
         <button class="btn" data-a="menu">Hauptmenü</button></div>
         <p class="small muted">Das Spiel wird automatisch gespeichert. Aufträge erfüllt: ${pl.questsDone}.</p></div></div></div>`;
+  }
+
+  // ---------- Tutorial (geführt) ----------
+  const TUT_KEY = 'salz-und-krone-tutorial';
+  const tutDone = () => { try { return localStorage.getItem(TUT_KEY) === '1'; } catch (e) { return false; } };
+  const setTutDone = () => { try { localStorage.setItem(TUT_KEY, '1'); } catch (e) { /* privat */ } };
+  const tut = { on: false, i: 0, scrolled: -1, round: 0, timer: null };
+
+  function tutShip(pl) { return pl.ships.find(sh => sh.at === pl.home) || pl.ships.find(sh => sh.at) || pl.ships[0]; }
+  function tutSteps(pl) {
+    const home = SK.C[pl.home], good = SK.G[home.p[0]];
+    const iconRow = SK.GOODS.map(g => `${g.icon} ${g.name}`).join(' · ');
+    return [
+      { title: 'Willkommen, Kaufmann!', text: `In <b>Salz &amp; Krone</b> handelst du mit Waren zwischen zehn Hansestädten, baust mit dem Gewinn dein Lehen aus und steigst Rang um Rang auf – vom <b>Krämer</b> zum <b>Reichsfürsten</b>. Dieses Tutorial zeigt dir in ein paar Schritten alles Wichtige. Du spielst dabei schon richtig mit.` },
+      { sel: '.top .gold', title: 'Gold und Ansehen', text: `Hier siehst du dein <b>Gold</b> 🪙 und dein <b>Ansehen</b> (0–100). Gold verdienst du mit Handel und Steuern. Ansehen bekommst du durch erfüllte Aufträge, satte Untertanen, Bauten und Spenden – beides brauchst du für jeden Aufstieg.` },
+      { sel: '.top .arms', title: 'Dein Wappen', text: `Jedes Handelshaus hat ein eigenes Wappen. Neben dem Namen stehen dein Rang und die aktuelle <b>Jahreszeit</b>.` },
+      { sel: '[data-a=end]', title: 'Eine Runde = eine Jahreszeit', text: `Mit <b>„Zug ▸“</b> beendest du deinen Zug. Wenn alle Häuser gezogen haben, vergeht eine Jahreszeit: Schiffe segeln weiter, Märkte erholen sich, Steuern kommen herein. Vier Jahreszeiten sind ein Jahr; im <b>Herbst</b> ist Ernte, im <b>Winter</b> frieren Stockholm, Riga und Reval zu ❄.` },
+      { tab: 'karte', sel: 'svg.map', title: 'Die Seekarte', text: `Die Kreise sind die zehn Hansestädte. Eine <b>Flagge</b> markiert die Heimat eines Hauses – deine ist ${home.name}. Kleine Schiffe zeigen, wo Flotten liegen oder unterwegs sind, 📜 markiert einen Auftrag. Tippe auf eine Stadt, um ihre Preise zu sehen.` },
+      { tab: 'karte', sel: '.sheet .row.small', title: 'Die Waren', text: `Neun Waren gibt es: ${iconRow}. Die Zahl ist der Verkaufspreis in dieser Stadt. <b style="color:#3f6b2a">Grün</b> = hier billig (die Stadt erzeugt sie), <b style="color:#9e2a1f">rot</b> = hier teuer (die Stadt braucht sie). Das Geheimnis des Handels: billig kaufen, wo es grün ist – teuer verkaufen, wo es rot ist.` },
+      { sel: '[data-tab=markt]', title: 'Auf zum Markt', text: `Öffne den <b>Markt</b> unten in der Leiste.`, done: () => ui.tab === 'markt', action: true },
+      { sel: '[data-a=holder]:last-of-type', title: 'Wohin mit der Ware?', text: `Oben wählst du, wohin die gekaufte Ware kommt: ins <b>Heimatlager</b> oder in den Laderaum eines <b>Schiffes</b>. Wähle deine Kogge.`, done: () => ui.holder && ui.holder.kind === 'ship', action: true },
+      { sel: `[data-a=buy][data-g=${good.id}][data-q="10"]`, title: `${good.icon} ${good.name} kaufen`, text: `${home.name} erzeugt <b>${good.name}</b> – erkennbar am grünen „Erz.“. Kaufe zweimal <b>+10</b>. Achte darauf, wie der Preis mit jedem Kauf steigt: Große Mengen verteuern die Ware, deshalb lohnt es sich, auf mehreren Märkten zu handeln.`,
+        done: () => { const sh = tutShip(pl); return sh && SK.load(sh.cargo) >= 20; }, action: true },
+      { sel: '[data-a=send]', title: 'Leinen los!', text: `Jetzt bringen wir die Ladung dorthin, wo man sie braucht. Tippe auf <b>„Lossegeln ▸“</b>.`, done: () => !!ui.send, action: true },
+      { sel: 'g.badge.best, g.badge', title: 'Das Ziel wählen', text: `Die gestrichelten Linien sind Seerouten. Jedes Schild zeigt die <b>Reisezeit</b> ⏳ (in Jahreszeiten) und den <b>Erlös</b>, den deine Ladung dort bringen würde. Das <b>goldene</b> Schild ist das lohnendste Ziel. Tippe es an.`,
+        done: () => pl.ships.some(sh => !sh.at), action: true },
+      { sel: '[data-tab=lehen]', title: 'Dein Lehen', text: `Handel ist nur die halbe Macht. Öffne dein <b>Lehen</b>.`, done: () => ui.tab === 'lehen', action: true },
+      { tab: 'lehen', sel: 'main .sheet', title: 'Land, Leute, Getreide', text: `Jeder Bauer bestellt bis zu 3 Morgen Land; jeder Untertan braucht im Jahr ${SK.GRAIN_PER_HEAD} Last Getreide. Im <b>Herbst</b> kommt die Ernte ins Heimatlager, und du entscheidest, wie viel Getreide du verteilst und wie hoch die <b>Steuern</b> sind. Satte Leute und milde Steuern bringen Zuzug – Hunger vertreibt sie.` },
+      { tab: 'lehen', sel: 'main .sheet:nth-child(3)', title: 'Bauten', text: `🌀 Mühle (mehr Ernte), 🏚️ Speicher (größeres Lager), 🏪 Markt (mehr Steuern), ⛪ Kirche und 🕍 Dom (Ansehen), 🧱 Stadtmauer (Schutz). Viele Ränge verlangen bestimmte Bauten.` },
+      { sel: '[data-tab=reich]', title: 'Das Reich', text: `Öffne zuletzt das <b>Reich</b>.`, done: () => ui.tab === 'reich', action: true },
+      { tab: 'reich', sel: '.ladder', title: 'Die Rangleiter', text: `Hier siehst du, was dir für den nächsten Rang fehlt: ✓ erfüllt, ✗ noch offen. Daneben stehen die anderen Häuser und die Chronik. Unter „Einstellungen“ findest du jederzeit die <b>Spielanleitung</b> und kannst dieses Tutorial neu starten.` },
+      { sel: '[data-a=end]', title: 'Zug beenden', text: `Dein Schiff ist unterwegs. Beende jetzt deinen Zug mit <b>„Zug ▸“</b> – in der nächsten Jahreszeit erfährst du, wie die Fahrt verlief.`, done: () => S.round > tut.round, action: true },
+      { title: 'Gute Fahrt!', text: `Das Wichtigste weißt du jetzt. Verkaufe die Ladung, sobald dein Schiff angekommen ist (Markt → „Alles verkaufen“), kaufe dort, was in anderen Städten rot ist, und investiere in Land und Bauten. Achte auf die Briefe von Mechthild – und auf Aufträge der Stadträte 📜.<br><br>Die <b>Spielanleitung</b> öffnest du jederzeit mit dem <b>?</b> oben.` },
+    ];
+  }
+  function tutStart() {
+    tut.on = true; tut.i = 0; tut.scrolled = -1; tut.round = S.round;
+    clearInterval(tut.timer); tut.timer = setInterval(tutUpdate, 350);
+    tutUpdate();
+  }
+  function tutEnd() {
+    tut.on = false; clearInterval(tut.timer); setTutDone();
+    document.querySelectorAll('.tut-spot,.tut-bubble').forEach(e => e.remove());
+  }
+  function tutOffer(next) {
+    if (tutDone() || me().ai) { next(); return; }
+    modal(`<div class="head row"><span style="font-size:30px">🧭</span><h2>Erste Fahrt?</h2></div>
+      <p>Möchtest du ein kurzes Tutorial? Es führt dich in etwa zwei Minuten durch deine erste Handelsfahrt und erklärt Karte, Markt, Lehen und Ränge.</p>
+      <div class="actions"><button class="btn" data-m="no">Ich kenne mich aus</button><button class="btn primary" data-m="yes">Tutorial starten</button></div>`,
+    m => { closeModal(); if (m === 'yes') tutStart(); else setTutDone(); next(); });
+  }
+  function tutUpdate() {
+    if (!tut.on || !S) return;
+    const pl = me();
+    if (pl.ai) return;
+    const steps = tutSteps(pl), st = steps[tut.i];
+    if (!st) { tutEnd(); return; }
+    if (st.done && st.done()) { tut.i++; tut.scrolled = -1; AUDIO.play('page'); tutUpdate(); return; }
+    // Ansicht für Info-Schritte selbst einstellen
+    if (st.tab && !st.done && ui.tab !== st.tab && $modal.hidden) { ui.tab = st.tab; render(); }
+    let spot = document.querySelector('.tut-spot'), bub = document.querySelector('.tut-bubble');
+    if (!spot) { spot = document.createElement('div'); spot.className = 'tut-spot'; document.body.appendChild(spot); }
+    if (!bub) { bub = document.createElement('div'); bub.className = 'tut-bubble'; document.body.appendChild(bub); bub.onclick = tutClick; }
+    const busy = !$modal.hidden;
+    spot.hidden = bub.hidden = busy;
+    if (busy) return;
+    let target = null;
+    if (st.sel) for (const s of st.sel.split(',')) { const all = [...document.querySelectorAll(s.trim())].filter(e => e.getBoundingClientRect().width > 0); if (all.length) { target = all[0]; break; } }
+    if (target && tut.scrolled !== tut.i) {
+      tut.scrolled = tut.i;
+      const r0 = target.getBoundingClientRect(), bh = (bub.offsetHeight || 240) + 110;
+      // Ziel in den freien Bereich über der Sprechblase holen (große Ziele wie die Karte bleiben, wo sie sind)
+      if (r0.height < innerHeight * 0.5 && (r0.top < 70 || r0.bottom > innerHeight - bh)) window.scrollBy({ top: r0.top - innerHeight * 0.22, behavior: 'smooth' });
+    }
+    let r = null;
+    if (target) { r = target.getBoundingClientRect(); const pad = 6; spot.style.cssText = `left:${r.left - pad}px;top:${r.top - pad}px;width:${r.width + pad * 2}px;height:${r.height + pad * 2}px`; spot.classList.remove('none'); }
+    else spot.classList.add('none');
+    const html = `<div class="tut-step">${tut.i + 1} / ${steps.length}</div><h3>${st.title}</h3><p>${st.text}</p>
+      <div class="tut-actions"><button class="btn sm" data-tut="end">Tutorial beenden</button>
+      ${st.action ? '<span class="tut-hint">👉 Tippe auf das Hervorgehobene</span>' : `<button class="btn sm primary" data-tut="next">${tut.i === steps.length - 1 ? 'Los geht’s!' : 'Weiter'}</button>`}</div>`;
+    if (bub.dataset.k !== String(tut.i)) { bub.innerHTML = html; bub.dataset.k = String(tut.i); }
+    // Sprechblase in die Bildschirmhälfte gegenüber dem Ziel
+    const low = r && (r.top + r.height / 2) > innerHeight / 2;
+    bub.classList.toggle('at-top', !!low); bub.classList.toggle('at-bottom', !low);
+  }
+  function tutClick(e) {
+    const b = e.target.closest('[data-tut]');
+    if (!b) return;
+    if (b.dataset.tut === 'end') { tutEnd(); return; }
+    tut.i++; tut.scrolled = -1; AUDIO.play('page');
+    const bub = document.querySelector('.tut-bubble'); if (bub) bub.dataset.k = '';
+    tutUpdate();
+  }
+  window.addEventListener('resize', () => tutUpdate());
+  window.addEventListener('scroll', () => tutUpdate(), { passive: true });
+
+  // ---------- Spielanleitung (zum Nachschlagen) ----------
+  function handbook() {
+    const goods = SK.GOODS.map(g => {
+      const from = SK.CITIES.filter(c => c.p.includes(g.id)).map(c => c.name).join(', ');
+      const to = SK.CITIES.filter(c => c.d.includes(g.id)).map(c => c.name).join(', ');
+      return `<tr><td class="good"><span class="ic">${g.icon}</span>${g.name}</td><td class="num">${g.base}</td><td class="small"><span class="cheap">${from}</span></td><td class="small"><span class="dear">${to}</span></td></tr>`;
+    }).join('');
+    const ships = Object.keys(SK.SHIPS).map(k => { const T = SK.SHIPS[k]; return `<div class="stat"><span class="row" style="flex-wrap:nowrap">${shipSvg('#b3261e', 48, k)}<span><b>${T.name}</b><br><span class="small muted">${T.cap} Last · ${fmt(T.price)} Gold · Unterhalt ${T.upkeep} je Jahreszeit</span></span></span></div>`; }).join('');
+    const blds = SK.BUILDINGS.map(b => `<div class="stat"><span>${b.icon} <b>${b.name}</b></span><span class="small muted">${b.text} · ${fmt(b.price)} Gold</span></div>`).join('');
+    const ranks = SK.RANKS.map((R, i) => {
+      const req = [R.worth && `Vermögen ${fmt(R.worth)}`, R.ansehen && `Ansehen ${R.ansehen}`, R.land && `${R.land} Morgen`, R.pop && `${R.pop} Untertanen`, R.soldiers && `${R.soldiers} Soldaten`, ...(R.bld || []).map(b => SK.B[b].name)].filter(Boolean).join(', ');
+      return `<div class="stat"><span><b>${i + 1}. ${R.name}</b></span><span class="small muted">${req || 'Start'}</span></div>`;
+    }).join('');
+    const sections = [
+      ['Ziel', `<p>Steige vom Krämer zum <b>Reichsfürsten</b> auf. Wer das zuerst schafft, gewinnt. Sonst gewinnt nach Ablauf der Jahre, wer den höchsten Rang und das größte Vermögen hat.</p>`],
+      ['Ablauf einer Runde', `<p>Eine Runde ist eine <b>Jahreszeit</b>. Jedes Haus macht seinen Zug – kaufen, verkaufen, Schiffe losschicken, bauen – und beendet ihn mit <b>„Zug ▸“</b>. Danach vergeht die Jahreszeit: Schiffe segeln weiter, Märkte erholen sich, Steuern und Unterhalt werden verrechnet, Ereignisse geschehen. Die Zugreihenfolge wechselt jede Runde.</p>
+        <p>🌱 Frühling: das Wetter des Jahres zeigt sich · ☀️ Sommer · 🍂 Herbst: Ernte und Jahresabschluss · ❄ Winter: Stockholm, Riga und Reval sind vereist, Stürme sind häufiger.</p>`],
+      ['Symbole', `<div class="stat"><span>🪙</span><span class="small muted">Gold</span></div><div class="stat"><span>Ansehen</span><span class="small muted">Ruf deines Hauses, 0–100</span></div>
+        <div class="stat"><span>⏳ 2</span><span class="small muted">Reisezeit in Jahreszeiten</span></div><div class="stat"><span>❄</span><span class="small muted">Hafen vereist (Winter)</span></div>
+        <div class="stat"><span>📜</span><span class="small muted">Auftrag eines Stadtrates</span></div><div class="stat"><span>⚔️</span><span class="small muted">bewaffnetes Schiff – sicherer vor Seeräubern</span></div>
+        <div class="stat"><span>Flagge an einer Stadt</span><span class="small muted">Heimat eines Hauses</span></div><div class="stat"><span>farbige Raute in der Stadt</span><span class="small muted">dein Kontor</span></div>
+        <div class="stat"><span><span class="chip ok">Erz.</span> / <span class="chip no">gefr.</span></span><span class="small muted">hier erzeugt (billig) / hier gefragt (teuer)</span></div>
+        <div class="stat"><span>🎵</span><span class="small muted">Musik an/aus</span></div>`],
+      ['Waren', `<p class="small muted">Grundpreis je Last. Grün: wo sie erzeugt wird (billig) · Rot: wo sie gefragt ist (teuer). Jeder Kauf treibt den Preis, jeder Verkauf drückt ihn; über die Jahreszeiten erholen sich die Märkte.</p>
+        <div style="overflow-x:auto"><table><tr><th>Ware</th><th class="num">Preis</th><th>billig in</th><th>teuer in</th></tr>${goods}</table></div>`],
+      ['Schiffe und Kontore', `${ships}<p class="small">Neue Schiffe laufen in deiner Heimatstadt vom Stapel. Stürme können Ladung kosten oder ein Schiff versenken; Seeräuber lauern vor den Häfen – Bewaffnung (${SK.ARM_PRICE} Gold) hilft. Ein <b>Kontor</b> (${fmt(SK.KONTOR_PRICE)} Gold) in einer fremden Stadt ist ein Lager, in dem du auch ohne Schiff handeln kannst.</p>`],
+      ['Lehen', `<p>Land kostet ${SK.LAND_PRICE} Gold je Morgen. Jeder Bauer bestellt bis zu 3 Morgen; jeder Untertan braucht im Jahr ${SK.GRAIN_PER_HEAD} Last Getreide. Im Herbst kommt die Ernte ins Heimatlager; im <b>Jahresabschluss</b> verteilst du Getreide und legst die Steuern fest. Gut versorgt und mild besteuert wächst dein Volk – Hunger und hohe Steuern vertreiben es und kosten Ansehen. Soldaten (${SK.SOLDIER_PRICE} Gold, Sold ${SK.SOLDIER_UPKEEP}) schützen vor Räubern und erlauben Fehden gegen andere Häuser.</p>`],
+      ['Bauten', blds],
+      ['Ränge', `<p class="small muted">Für jeden Rang müssen alle Bedingungen gleichzeitig erfüllt sein. Vermögen = Gold + Waren + Schiffe + Land + Bauten.</p>${ranks}`],
+      ['Aufträge und Ereignisse', `<p>Stadträte bitten um Lieferungen mit Frist. Wer pünktlich liefert, bekommt Gold und Ansehen; wer die Frist verpasst, verliert Ansehen. Dazu kommen Ereignisse wie Seuchen, Räuber, Feuer, Erbschaften und Fürstenbesuche – und die Briefe deiner Großmutter.</p>`],
+      ['Tipps', `<p>• Kaufe grün, verkaufe rot – und nicht alles auf einem Markt.<br>• Halte vor dem Herbst genug Getreide bereit.<br>• Ein zweites Schiff verdoppelt die Einnahmen; eine Mühle früh lohnt sich.<br>• Schulden kosten jede Jahreszeit Zinsen und Ansehen.<br>• Plane den Winter: Die östlichen Häfen frieren zu.</p>`],
+    ];
+    modal(`<div class="spread"><h2>📖 Spielanleitung</h2><button class="btn sm" data-m="ok">Schließen</button></div>
+      ${sections.map(([t, b]) => `<details class="hb"><summary>${t}</summary><div>${b}</div></details>`).join('')}
+      <div class="actions"><button class="btn" data-m="tut">Tutorial starten</button><button class="btn primary" data-m="ok">Schließen</button></div>`,
+    m => { if (m === 'ok') closeModal(); if (m === 'tut') { closeModal(); if (S && !me().ai) { ui.tab = 'karte'; render(); tutStart(); } else toast('Das Tutorial startet im laufenden Spiel.'); } });
+    $modal.querySelector('.sheet').classList.add('wide');
+    const first = $modal.querySelector('details'); if (first) first.open = true;
   }
 
   // ---------- Eingaben ----------
@@ -718,7 +858,8 @@
         });
         return;
       }
-      case 'menu': save(); title(); return;
+      case 'menu': save(); if (tut.on) tutEnd(); title(); return;
+      case 'help': handbook(); return;
       default: return;
     }
     save(); render();

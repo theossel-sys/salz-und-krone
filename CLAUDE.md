@@ -36,5 +36,11 @@ Handel + Herrschaft kombiniert · Hot-Seat 1–4 Spieler + Computergegner · mod
   unterscheidet Schnigge/Kogge/Holk (Karte, Flotte, Werft); ART.skyline(stadt,…) Stadtsilhouetten mit
   Wahrzeichen je Stadt (Lübeck Doppeltürme+Tor, Brügge Belfried, Bergen Speicher, Visby/Reval Mauer …) als Kopfbild
   in Stadt- und Marktkarte. Galerie-Check per Playwright.
+- Tutorial + Spielanleitung (User-Wunsch): geführtes Tutorial in ui.js (tutSteps, 18 Schritte, Spotlight `.tut-spot` +
+  Sprechblase `.tut-bubble`, Aktionsschritte warten auf die echte Aktion: Markt öffnen, Schiff wählen, Erz.-Ware kaufen,
+  lossegeln, Ziel wählen, Lehen, Reich, Zug beenden). Wird im ersten Spiel angeboten (localStorage
+  `salz-und-krone-tutorial`), neu startbar. Spielanleitung `handbook()` (aufklappbar, Waren/Schiffe/Bauten/Ränge aus
+  den Spieldaten erzeugt) über „?“ in der Kopfzeile, Reich → Einstellungen und Titelbild. Playwright-Durchlauf
+  Handy + Desktop ok. Achtung: CSS-Klasse `.top` ist die Kopfzeile – nicht für andere Elemente verwenden.
 - Ideen für später: Konvois/Kapitäne, Hansetage/Belagerungen, Heirat & Erbfolge, Musik/SFX, bessere Grafiken,
   KI-Schwierigkeitsstufen.

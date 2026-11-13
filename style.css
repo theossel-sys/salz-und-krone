@@ -285,3 +285,42 @@ svg.map.sending .city text { opacity: .85; }
 .skyline svg { display: block; }
 .ship .pic { width: 64px; height: 64px; background: linear-gradient(#a9cfdc, #5c8ea6); }
 .shipshop svg { flex: none; }
+
+/* ---------- Tutorial ---------- */
+.tut-spot { position: fixed; z-index: 15; pointer-events: none; border-radius: 12px;
+  box-shadow: 0 0 0 4px #f1c75b, 0 0 0 9999px rgba(15,9,4,.55); transition: all .25s ease; animation: tutpulse 1.6s ease-in-out infinite; }
+.tut-spot.none { box-shadow: 0 0 0 9999px rgba(15,9,4,.55); width: 0 !important; height: 0 !important; left: 50% !important; top: 50% !important; animation: none; }
+@keyframes tutpulse { 0%, 100% { box-shadow: 0 0 0 4px #f1c75b, 0 0 0 9999px rgba(15,9,4,.55); } 50% { box-shadow: 0 0 0 8px rgba(241,199,91,.6), 0 0 0 9999px rgba(15,9,4,.55); } }
+.tut-spot[hidden], .tut-bubble[hidden] { display: none; }
+.tut-bubble { position: fixed; z-index: 16; left: 50%; transform: translateX(-50%); width: min(92vw, 440px);
+  background: radial-gradient(ellipse at 30% 20%, #fffaf0, #f1e1bb 70%); color: var(--ink); border-radius: 14px; padding: 14px 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.5); border: 2px solid var(--gold); animation: pop .25s ease-out; }
+.tut-bubble.at-bottom { bottom: calc(env(safe-area-inset-bottom) + 86px); }
+.tut-bubble.at-top { top: calc(env(safe-area-inset-top) + 70px); }
+.tut-bubble h3 { font: 700 18px var(--head); margin: 2px 0 6px; }
+.tut-bubble p { margin: 0 0 10px; font-size: 16.5px; }
+.tut-step { font: 600 12px var(--head); color: var(--ink-soft); letter-spacing: .08em; }
+.tut-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tut-hint { font-weight: 700; color: #7a5410; font-size: 15px; }
+.iconbtn.help { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #cdb88f; font: 700 18px var(--head); padding: 0; }
+
+/* ---------- Spielanleitung ---------- */
+.modal .sheet.wide { max-width: 680px; }
+details.hb { border-bottom: 1px dashed var(--line); padding: 4px 0; }
+details.hb summary { cursor: pointer; font: 700 16px var(--head); padding: 8px 0; list-style: none; }
+details.hb summary::before { content: '▸ '; color: var(--gold); }
+details.hb[open] summary::before { content: '▾ '; }
+details.hb p { margin: 0 0 8px; }
+
+.toast.up { bottom: auto; top: calc(env(safe-area-inset-top) + 64px); }
+@media (max-width: 480px) {
+  .top { gap: 6px; padding-left: calc(env(safe-area-inset-left) + 8px); padding-right: calc(env(safe-area-inset-right) + 8px); }
+  .top .who b { font-size: 15px; }
+  .top .who small { font-size: 12.5px; }
+  .top .gold { font-size: 16px; }
+  .top .gold small { font-size: 12px; }
+  .iconbtn { font-size: 18px; padding: 2px; }
+  .iconbtn.help { width: 28px; height: 28px; font-size: 15px; }
+  .endturn { padding: 7px 9px; font-size: 14px; }
+  .top .arms svg { width: 32px; height: 35px; }
+}
