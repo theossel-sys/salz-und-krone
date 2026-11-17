@@ -42,5 +42,9 @@ Handel + Herrschaft kombiniert · Hot-Seat 1–4 Spieler + Computergegner · mod
   `salz-und-krone-tutorial`), neu startbar. Spielanleitung `handbook()` (aufklappbar, Waren/Schiffe/Bauten/Ränge aus
   den Spieldaten erzeugt) über „?“ in der Kopfzeile, Reich → Einstellungen und Titelbild. Playwright-Durchlauf
   Handy + Desktop ok. Achtung: CSS-Klasse `.top` ist die Kopfzeile – nicht für andere Elemente verwenden.
+- Draw Things (lokale KI-Bild-App des Users): kein direkter Zugriff aus der Cloud-Session. Workflow: art/PROMPTS.md
+  (Prompts + Stil-Zusatz, magentafarbener Hintergrund #FF00FF), User lädt nach art/incoming/ hoch,
+  `python3 tools/import_art.py` stellt frei (Flutfüllung + Magenta-Saum), schneidet zu, skaliert nach
+  art/manifest.json → assets/. Danach Einbau ins Spiel (noch offen, wartet auf Bilder; Code-Grafik bleibt Fallback).
 - Ideen für später: Konvois/Kapitäne, Hansetage/Belagerungen, Heirat & Erbfolge, Musik/SFX, bessere Grafiken,
   KI-Schwierigkeitsstufen.

@@ -1,0 +1,27 @@
+{
+  "game": "Salz & Krone",
+  "images": {
+    "good_getreide":  { "size": [96, 96], "mode": "smooth", "pad": 4, "note": "Ware Getreide" },
+    "good_holz":      { "size": [96, 96], "mode": "smooth", "pad": 4, "note": "Ware Holz" },
+    "good_bier":      { "size": [96, 96], "mode": "smooth", "pad": 4, "note": "Ware Bier" },
+    "good_salz":      { "size": [96, 96], "mode": "smooth", "pad": 4, "note": "Ware Salz" },
+    "good_hering":    { "size": [96, 96], "mode": "smooth", "pad": 4, "note": "Ware Hering" },
+    "good_eisen":     { "size": [96, 96], "mode": "smooth", "pad": 4, "note": "Ware Eisen" },
+    "good_tuch":      { "size": [96, 96], "mode": "smooth", "pad": 4, "note": "Ware Tuch" },
+    "good_wein":      { "size": [96, 96], "mode": "smooth", "pad": 4, "note": "Ware Wein" },
+    "good_pelze":     { "size": [96, 96], "mode": "smooth", "pad": 4, "note": "Ware Pelze" },
+    "bld_muehle":     { "size": [256, 256], "mode": "smooth", "pad": 6, "note": "Mühle" },
+    "bld_speicher":   { "size": [256, 256], "mode": "smooth", "pad": 6, "note": "Speicher" },
+    "bld_markt":      { "size": [256, 256], "mode": "smooth", "pad": 6, "note": "Marktplatz" },
+    "bld_kirche":     { "size": [256, 256], "mode": "smooth", "pad": 6, "note": "Kirche" },
+    "bld_mauer":      { "size": [256, 256], "mode": "smooth", "pad": 6, "note": "Stadtmauer" },
+    "bld_dom":        { "size": [256, 256], "mode": "smooth", "pad": 6, "note": "Dom" },
+    "ship_schnigge":  { "size": [256, 220], "mode": "smooth", "pad": 4, "note": "Schiff klein" },
+    "ship_kogge":     { "size": [256, 220], "mode": "smooth", "pad": 4, "note": "Schiff mittel" },
+    "ship_holk":      { "size": [256, 220], "mode": "smooth", "pad": 4, "note": "Schiff groß" },
+    "portrait_mechthild": { "size": [320, 400], "mode": "smooth", "keep_background": true, "note": "Großmutter Mechthild (Briefe)" },
+    "portrait_johan": { "size": [320, 400], "mode": "smooth", "keep_background": true, "note": "Vater Johan (Prolog)" },
+    "title":          { "size": [1600, 900], "mode": "smooth", "keep_background": true, "note": "Titelbild quer" },
+    "title_portrait": { "size": [900, 1600], "mode": "smooth", "keep_background": true, "note": "Titelbild hochkant (Handy)" }
+  }
+}
