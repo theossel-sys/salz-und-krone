@@ -324,3 +324,26 @@ details.hb p { margin: 0 0 8px; }
   .endturn { padding: 7px 9px; font-size: 14px; }
   .top .arms svg { width: 32px; height: 35px; }
 }
+
+/* ---------- Bilder aus Draw Things ---------- */
+img.gi { width: 1.45em; height: 1.45em; object-fit: contain; vertical-align: -0.38em; }
+.good .ic img.gi { width: 30px; height: 30px; vertical-align: middle; }
+.chip img.gi { width: 1.6em; height: 1.6em; margin: -3px 0; }
+.ship .pic { width: 84px; height: 72px; background: none; }
+img.shippic { width: 84px; height: 72px; object-fit: contain; filter: drop-shadow(0 3px 2px rgba(0,0,0,.3)); }
+img.shippic.sm { width: 70px; height: 60px; flex: none; }
+.stat.bld img.bldpic { width: 64px; height: 64px; object-fit: contain; flex: none; filter: grayscale(.9) opacity(.45); transition: filter .3s; }
+.stat.bld.built img.bldpic { filter: drop-shadow(0 3px 3px rgba(0,0,0,.35)); }
+.letter img.portrait { float: right; width: 120px; height: 150px; object-fit: cover; margin: 0 0 10px 14px; border-radius: 6px;
+  box-shadow: 0 0 0 3px #e0c48c, 0 0 0 5px #8a6a3a, 0 6px 14px rgba(0,0,0,.35); }
+.letter img.portrait.mourn { filter: grayscale(1) sepia(.35); box-shadow: 0 0 0 3px #2a1e14, 0 0 0 5px #8a6a3a, 0 6px 14px rgba(0,0,0,.35); }
+@media (max-width: 420px) { .letter img.portrait { width: 92px; height: 116px; } }
+.title-bg { position: fixed; inset: 0; z-index: 0; background: #1c130b url(assets/title.jpg) center / cover no-repeat; animation: kenburns 40s ease-in-out infinite alternate; }
+@media (orientation: portrait) { .title-bg { background-image: url(assets/title_portrait.jpg); } }
+@keyframes kenburns { from { transform: scale(1.02); } to { transform: scale(1.1) translateY(-1.5%); } }
+.title > .title-bg { position: fixed; inset: 0; z-index: 0; }
+.title > .title-dim { position: fixed; inset: 0; z-index: 0;
+  background: linear-gradient(rgba(20,12,5,.05), rgba(20,12,5,.25) 35%, rgba(20,12,5,.7) 75%, rgba(20,12,5,.85)); }
+.ship { grid-template-columns: 90px 1fr; }
+.title > .title-dim { background: linear-gradient(rgba(20,12,5,.55), rgba(20,12,5,.3) 30%, rgba(20,12,5,.55) 70%, rgba(20,12,5,.85)); }
+.title .sub { color: #fbf0d6; text-shadow: 0 1px 2px #000, 0 0 12px rgba(0,0,0,.85); }

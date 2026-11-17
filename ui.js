@@ -10,6 +10,10 @@
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   let S = null;                 // Spielstand
+  // gemalte Bilder aus Draw Things (assets/); fehlt eines, zeigt der Browser das Emoji als Alternativtext
+  SK.GOODS.forEach(g => { g.emoji = g.emoji || g.icon; g.icon = `<img class="gi" src="assets/good_${g.id}.png" alt="${g.emoji}">`; });
+  SK.BUILDINGS.forEach(b => { b.emoji = b.emoji || b.icon; b.icon = `<img class="gi" src="assets/bld_${b.id}.png" alt="${b.emoji}">`; });
+  const shipPic = (type, cls) => `<img class="${cls || 'shippic'}" src="assets/ship_${type}.png" alt="">`;
   const ui = { tab: 'karte', city: null, holder: null, send: null, shown: -1 };
 
   // ---------- Speichern ----------
@@ -132,7 +136,7 @@
         </select>
       </div>`).join('');
     $app.innerHTML = `
-      <div class="title">${scene(false)}<div class="title-dim"></div>
+      <div class="title"><div class="title-bg"></div><div class="title-dim"></div>
         <h1>Salz &amp; Krone</h1>
         <div class="sub">Handle mit Salz und Hering zwischen Brügge und Reval, kaufe Land, baue dein Lehen aus – und steige vom Krämer zum Reichsfürsten auf.</div>
         ${saved && !saved.over ? `<button class="btn primary" data-t="cont">Spiel fortsetzen – ${SK.SEASONS[saved.round % 4]} ${SK.START_YEAR + Math.floor(saved.round / 4)}</button>` : ''}
@@ -221,7 +225,7 @@
     const body = lines.map((t, i) => `<p class="${t.startsWith('—') ? 'sig' : ''}">${esc(t)}</p>`).join('');
     AUDIO.play(card.icon === 'krone' ? 'fanfare' : 'page');
     if (card.icon === 'krone') setTimeout(() => AUDIO.play('bell'), 900);
-    modal(`<div class="letter-in"><div class="head"><div class="wax">${ICONS[card.icon] || ICONS.feder}</div><h2>${esc(card.title)}</h2></div>
+    modal(`<div class="letter-in">${card.portrait ? `<img class="portrait ${card.mourn ? 'mourn' : ''}" src="assets/portrait_${card.portrait}.jpg" alt="">` : ''}<div class="head"><div class="wax">${ICONS[card.icon] || ICONS.feder}</div><h2>${esc(card.title)}</h2></div>
       ${body}${card.sign ? `<p class="goal">${esc(card.sign)}</p>` : ''}
       <div class="actions"><button class="btn primary" data-m="ok">Weiter</button></div></div>`, () => { closeModal(); onDone(); });
     $modal.querySelector('.sheet').classList.add('letter');
@@ -230,10 +234,13 @@
     const queue = [];
     // Story zuerst
     (pl.story || []).splice(0).forEach(key => {
-      if (key === 'jahr') queue.push(next => letter(STORY.yearLetter(S, pl), next));
+      const alive = !pl.flags.erbe;
+      if (key === 'jahr') queue.push(next => letter(Object.assign(STORY.yearLetter(S, pl), { portrait: alive ? 'mechthild' : null }), next));
       else if (STORY.BEATS[key]) {
         const b = STORY.BEATS[key];
-        queue.push(next => letter({ icon: b.icon, title: b.title, text: b.text(S, pl), sign: b.sign }, next));
+        const portrait = key === 'schiffbruch' ? 'johan' : key === 'erbe' ? 'mechthild'
+          : (['prolog', 'auftrag', 'schulden', 'hunger'].includes(key) || /^rang[1-4]$/.test(key)) && alive ? 'mechthild' : null;
+        queue.push(next => letter({ icon: b.icon, title: b.title, text: b.text(S, pl), sign: b.sign, portrait, mourn: key === 'erbe' }, next));
       }
     });
     const ev = (pl.events || []);
@@ -531,7 +538,7 @@
     const cards = pl.ships.map(sh => {
       const T = SK.SHIPS[sh.type], used = SK.load(sh.cargo);
       const where = sh.at ? `liegt in ${SK.C[sh.at].name}` : `segelt nach ${SK.C[sh.to].name} · Ankunft in ${sh.left} ${sh.left === 1 ? 'Jahreszeit' : 'Jahreszeiten'}`;
-      return `<div class="ship"><div class="pic">${shipSvg(pl.color, 52, sh.type)}</div><div>
+      return `<div class="ship"><div class="pic">${shipPic(sh.type)}</div><div>
         <div class="spread"><b>„${esc(sh.name)}“</b><span class="chip">${T.name}${sh.armed ? ' · ⚔️' : ''}</span></div>
         <div class="small muted">${where}</div>
         <div class="cargo">${cargoChips(sh.cargo)}</div>
@@ -546,7 +553,7 @@
     }).join('');
     const shop = Object.keys(SK.SHIPS).map(k => {
       const T = SK.SHIPS[k];
-      return `<div class="stat shipshop"><span class="row" style="flex-wrap:nowrap">${shipSvg(pl.color, 56, k)}<span><b>${T.name}</b> <span class="muted small">${T.cap} Last · ${k === 'schnigge' ? 'schnell' : k === 'holk' ? 'langsam, robust' : 'ausgewogen'} · Unterhalt ${T.upkeep}</span></span></span>
+      return `<div class="stat shipshop"><span class="row" style="flex-wrap:nowrap">${shipPic(k, 'shippic sm')}<span><b>${T.name}</b> <span class="muted small">${T.cap} Last · ${k === 'schnigge' ? 'schnell' : k === 'holk' ? 'langsam, robust' : 'ausgewogen'} · Unterhalt ${T.upkeep}</span></span></span>
         <button class="btn sm" data-a="buyship" data-type="${k}" ${pl.gold < T.price ? 'disabled' : ''}>${fmt(T.price)} 🪙</button></div>`;
     }).join('');
     return `<div class="sheet"><h2>Deine Flotte</h2>${cards}</div>
@@ -604,7 +611,7 @@
     const home = pl.kontore[pl.home];
     const need = Math.ceil(pl.pop * SK.GRAIN_PER_HEAD);
     const farmed = Math.min(pl.land, pl.pop * 3);
-    const blds = SK.BUILDINGS.map(b => `<div class="stat"><span>${b.icon} <b>${b.name}</b> <span class="small muted">${b.text}</span></span>
+    const blds = SK.BUILDINGS.map(b => `<div class="stat bld ${pl.buildings[b.id] ? 'built' : ''}"><span class="row" style="flex-wrap:nowrap"><img class="bldpic" src="assets/bld_${b.id}.png" alt=""><span><b>${b.name}</b><br><span class="small muted">${b.text}</span></span></span>
       ${pl.buildings[b.id] ? '<span class="chip ok">✓ gebaut</span>' : `<button class="btn sm" data-a="build" data-b="${b.id}" ${pl.gold < b.price ? 'disabled' : ''}>${fmt(b.price)} 🪙</button>`}</div>`).join('');
     const rivals = S.players.filter(p => p !== pl);
     return `<div class="grid2">

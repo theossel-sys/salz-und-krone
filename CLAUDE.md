@@ -45,6 +45,10 @@ Handel + Herrschaft kombiniert · Hot-Seat 1–4 Spieler + Computergegner · mod
 - Draw Things (lokale KI-Bild-App des Users): kein direkter Zugriff aus der Cloud-Session. Workflow: art/PROMPTS.md
   (Prompts + Stil-Zusatz, magentafarbener Hintergrund #FF00FF), User lädt nach art/incoming/ hoch,
   `python3 tools/import_art.py` stellt frei (Flutfüllung + Magenta-Saum), schneidet zu, skaliert nach
-  art/manifest.json → assets/. Danach Einbau ins Spiel (noch offen, wartet auf Bilder; Code-Grafik bleibt Fallback).
+  art/manifest.json → assets/. ERLEDIGT: 22 Bilder (lokale Session des Users) eingebaut: Waren-Icons ersetzen
+  zentral die Emojis (SK.GOODS[].icon = <img>, Emoji als alt/Fallback), Bauten-Bilder im Lehen (ungebaut blass),
+  Schiffsbilder in Flotte/Werft (Karte nutzt weiter Code-Schiffe), Porträts in Briefen (Mechthild; Johan beim
+  Schiffbruch; Erbe in Grau), Titelbild mit Ken-Burns-Effekt (quer/hochkant). Große Bilder als JPEG (Import-Skript
+  speichert keep_background-Bilder als .jpg).
 - Ideen für später: Konvois/Kapitäne, Hansetage/Belagerungen, Heirat & Erbfolge, Musik/SFX, bessere Grafiken,
   KI-Schwierigkeitsstufen.
