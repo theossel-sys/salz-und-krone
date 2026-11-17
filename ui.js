@@ -333,17 +333,17 @@
   }
 
   // ---------- Hauptansicht ----------
-  const TABS = [['karte', '🗺️', 'Karte'], ['flotte', '⛵', 'Flotte'], ['markt', '⚖️', 'Markt'], ['lehen', '🏰', 'Lehen'], ['reich', '👑', 'Reich']];
+  const TABS = ['karte', 'flotte', 'markt', 'lehen', 'reich'].map((id, i) => [id, `<img src="assets/tab_${id}.png" alt="${['🗺️', '⛵', '⚖️', '🏰', '👑'][i]}">`, ['Karte', 'Flotte', 'Markt', 'Lehen', 'Reich'][i]]);
   function render() {
     const pl = me();
     const body = { karte: viewMap, flotte: viewFleet, markt: viewMarket, lehen: viewFief, reich: viewRealm }[ui.tab](pl);
     $app.innerHTML = `
       <header class="top">${seal(pl)}
         <div class="who"><b>${esc(pl.name)}</b><small>${SK.RANKS[pl.rank].name} · ${SK.seasonName(S)} ${SK.year(S)}</small></div>
-        <div class="gold">${fmt(pl.gold)} 🪙<small>Ansehen ${pl.ansehen}</small></div>
-        <button class="iconbtn help" data-a="help" aria-label="Spielanleitung">?</button>
-        <button class="iconbtn" data-a="music" aria-label="Musik">${AUDIO.music ? '🎵' : '🔇'}</button>
-        <button class="endturn" data-a="end">Zug ▸</button>
+        <div class="gold"><span><img class="hi" src="assets/ico_gold.png" alt="">${fmt(pl.gold)}</span><small><img class="hi sm" src="assets/ico_ansehen.png" alt="">Ansehen ${pl.ansehen}</small></div>
+        <button class="iconbtn img help" data-a="help" aria-label="Spielanleitung"><img src="assets/ico_hilfe.png" alt="?"></button>
+        <button class="iconbtn img ${AUDIO.music ? '' : 'off'}" data-a="music" aria-label="Musik"><img src="assets/ico_musik.png" alt="🎵"></button>
+        <button class="endturn" data-a="end"><img src="assets/ico_zug.png" alt="">Zug</button>
       </header>
       <main>${body}</main>
       <nav class="tabs">${TABS.map(t => `<button data-tab="${t[0]}" class="${ui.tab === t[0] ? 'on' : ''}"><span>${t[1]}</span>${t[2]}</button>`).join('')}</nav>`;
@@ -410,15 +410,13 @@
         <pattern id="waves2" width="70" height="34" patternUnits="userSpaceOnUse"><path d="M0 17 Q17.5 9 35 17 T70 17" fill="none" stroke="#fff" stroke-opacity=".09" stroke-width="2"/></pattern>
         <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><line x1="0" y1="0" x2="0" y2="8" stroke="#8a6a3a" stroke-opacity=".12" stroke-width="2"/></pattern>
         <clipPath id="landclip">${LAND.map(d => `<path d="${d}"/>`).join('')}</clipPath>
+        <mask id="seamask"><rect width="1000" height="640" fill="#fff"/>${LAND.map(d => `<path d="${d}" fill="#000"/>`).join('')}</mask>
       </defs>
-      <rect width="1000" height="640" fill="url(#sea)"/>
-      <g class="anim-waves" style="${phase(9)}"><rect x="-70" y="-34" width="1140" height="720" fill="url(#waves2)"/></g>
-      <g class="anim-waves2" style="${phase(6)}"><rect x="-46" y="-20" width="1100" height="700" fill="url(#waves)"/></g>
-      <g class="anim-glint" style="${phase(14)}"><ellipse cx="300" cy="420" rx="120" ry="40" fill="url(#glint)"/><ellipse cx="680" cy="250" rx="90" ry="30" fill="url(#glint)"/></g>
-      ${winter ? '<path d="M560,0 L1000,0 L1000,330 L880,320 L780,240 L640,180 L600,120 Z" fill="#fff" fill-opacity=".45" filter="url(#blur)"/>' : ''}
-      <g filter="url(#sh)">${LAND.map(d => `<path d="${d}" fill="url(#land)" stroke="#7d5f33" stroke-width="1.6"/>`).join('')}</g>
-      <rect width="1000" height="640" fill="url(#hatch)" clip-path="url(#landclip)"/>
-      ${LAND.map(d => `<path d="${d}" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="5" transform="translate(0,2)" clip-path="url(#landclip)"/>`).join('')}
+      <image href="assets/${winter ? 'map_winter' : 'map_base'}.jpg" width="1000" height="640" preserveAspectRatio="none"/>
+      <g mask="url(#seamask)" opacity=".7">
+        <g class="anim-waves2" style="${phase(6)}"><rect x="-46" y="-20" width="1100" height="700" fill="url(#waves)"/></g>
+        <g class="anim-glint" style="${phase(14)}"><ellipse cx="300" cy="420" rx="120" ry="40" fill="url(#glint)"/><ellipse cx="680" cy="250" rx="90" ry="30" fill="url(#glint)"/></g>
+      </g>
       <g class="deco" fill="#6d5a37" opacity=".5" font-style="italic">
         <text x="150" y="380" font-size="18" letter-spacing="3">Mare Germanicum</text><text x="650" y="372" font-size="18" letter-spacing="3">Mare Balticum</text>
         <text x="330" y="90" font-size="22" letter-spacing="6">NORWEGEN · SCHWEDEN</text><text x="820" y="560" font-size="18" letter-spacing="4">LIVLAND</text><text x="120" y="610" font-size="16" letter-spacing="4">FLANDERN</text>
@@ -426,7 +424,7 @@
       <g class="anim-gulls" style="${phase(40)}" stroke="#2b3d46" stroke-opacity=".55" stroke-width="2" fill="none">
         <path d="M0,0 q6,-6 12,0 q6,-6 12,0"/><path d="M30,14 q5,-5 10,0 q5,-5 10,0"/>
       </g>
-      <g opacity=".55" transform="translate(150,300)"><path d="M0,0 q20,-26 40,0 q20,-26 40,0" fill="none" stroke="#2f5a6c" stroke-width="5" stroke-linecap="round"/><circle cx="84" cy="-4" r="5" fill="#2f5a6c"/><text x="-10" y="28" font-size="12" fill="#2f5a6c" font-style="italic">hic sunt dracones</text></g>`;
+`;
 
     // Seerouten zum Losschicken
     if (sending && sending.at) {
@@ -479,18 +477,16 @@
         <circle r="36" fill="transparent"/>
         ${ui.city === c.id && !sending ? `<circle r="20" class="pulse" style="${phase(2)}"/>` : ''}
         ${homeOf ? `<g class="flag" style="${phase(2.4)}"><path d="M-2,-34 L-2,-8" stroke="#3b2412" stroke-width="2"/><path d="M-2,-34 Q8,-36 16,-30 Q8,-26 -2,-24 Z" fill="${homeOf.color}" stroke="#3b2412" stroke-width="1"/></g>` : ''}
-        <circle r="12" fill="${frozen ? '#e3f1f7' : '#fbf2dc'}" stroke="#3b2412" stroke-width="2.5"/>
-        <path d="M-6,4 L-6,-2 L-3,-5 L0,-2 L3,-6 L6,-2 L6,4 Z" fill="${pl.kontore[c.id] ? pl.color : '#7d5f33'}"/>
+        <circle r="14" fill="${frozen ? '#e3f1f7' : '#fbf2dc'}" stroke="${pl.kontore[c.id] ? pl.color : '#3b2412'}" stroke-width="${pl.kontore[c.id] ? 3.5 : 2}"/>
+        <image href="assets/city_marker.png" x="-11" y="-12" width="22" height="22"/>
         <text y="30" text-anchor="middle" font-size="19" fill="#2b1d10" stroke="#f3e6c8" stroke-width="4" paint-order="stroke">${c.name}${frozen ? ' ❄' : ''}</text>
         ${mine && !sending ? `<g transform="translate(26,-12)">${shipOnMap(pl.color, 0, 0, 1, biggest(pl, c.id))}${mine > 1 ? `<text x="14" y="4" font-size="14" fill="#2b1d10" stroke="#f3e6c8" stroke-width="3" paint-order="stroke">×${mine}</text>` : ''}</g>` : ''}
       </g>`;
     });
     // Windrose und Kartusche
-    svg += `<g transform="translate(925,565)" class="rose"><circle r="40" fill="#f3e6c8" stroke="#7d5f33" stroke-width="2"/><circle r="31" fill="none" stroke="#7d5f33" stroke-dasharray="2 4"/>
-        <path d="M0,-36 L7,0 L0,36 L-7,0 Z" fill="#9e2a1f"/><path d="M-36,0 L0,-7 L36,0 L0,7 Z" fill="#5b4630"/><path d="M-20,-20 L3,-3 L20,20 L-3,3 Z" fill="#c9962b" opacity=".7"/>
-        <text y="-44" text-anchor="middle" font-size="14" fill="#5b4630">N</text></g>
-      <g transform="translate(786,18)"><rect width="196" height="54" rx="6" fill="#f3e6c8" stroke="#7d5f33" stroke-width="2"/><rect x="5" y="5" width="186" height="44" rx="4" fill="none" stroke="#7d5f33" stroke-opacity=".5"/>
-        <text x="98" y="26" text-anchor="middle" font-size="17" fill="#2b1d10">Carta Hanseatica</text><text x="98" y="42" text-anchor="middle" font-size="12" fill="#5b4630" font-style="italic">${SK.seasonName(S)} Anno ${SK.year(S)}</text></g>
+    svg += `<image href="assets/map_rose.png" x="868" y="508" width="112" height="112"/>
+      <g transform="translate(762,10)"><image href="assets/map_cartouche.png" width="230" height="81"/>
+        <text x="115" y="40" text-anchor="middle" font-size="18" fill="#2b1d10">Carta Hanseatica</text><text x="115" y="57" text-anchor="middle" font-size="12" fill="#5b4630" font-style="italic">${SK.seasonName(S)} Anno ${SK.year(S)}</text></g>
     </svg>`;
 
     let panel = '';

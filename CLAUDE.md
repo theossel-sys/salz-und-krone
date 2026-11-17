@@ -54,7 +54,10 @@ Handel + Herrschaft kombiniert · Hot-Seat 1–4 Spieler + Computergegner · mod
   als Bild-zu-Bild über art/guide/map_guide.png = exakte Küstenlinien aus ui.js LAND, 1600x1024 = 1,6 × viewBox;
   Tab-Icons, Kopfzeilen-Icons, Windrose, Kartusche, Seeschlange, Stadtsymbol, Holz/Pergament/Leder-Texturen).
   Wartet auf Bilder aus der lokalen Session; Einbau: map_base als <image> im SVG statt Meer/Land-Flächen.
-  BILDER DA (Commit 26c4cf0): alle 19 in assets/, noch nicht eingebaut. Seekarte ist montiert statt Bild-zu-Bild
+  BILDER DA (Commit 26c4cf0) und EINGEBAUT: Karte = <image> map_base/map_winter.jpg im SVG (Wellen/Glitzern per
+  mask nur aufs Meer; Code-Seeschlange entfernt, die Karte hat eine gemalte), Stadtsymbol-Bild (Kontor = farbiger Ring),
+  Windrose + Kartusche als Bilder; Cockpit: ui_wood (Kopf-/Fußleiste, Kartenrahmen), ui_parchment (.sheet),
+  ui_leather (body), Tab-Icons, ico_gold/ansehen/hilfe/musik/zug in der Kopfzeile. main padding-bottom 112px (Nav höher). Seekarte ist montiert statt Bild-zu-Bild
   (FLUX.2 klein kann das nicht sauber): art/map_parts/ + tools/compose_map.py, Küsten exakt nach map_guide.png.
 - Ideen für später: Konvois/Kapitäne, Hansetage/Belagerungen, Heirat & Erbfolge, Musik/SFX, bessere Grafiken,
   KI-Schwierigkeitsstufen.
