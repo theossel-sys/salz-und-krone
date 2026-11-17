@@ -1,27 +1,374 @@
 {
   "game": "Salz & Krone",
   "images": {
-    "good_getreide":  { "size": [96, 96], "mode": "smooth", "pad": 4, "note": "Ware Getreide" },
-    "good_holz":      { "size": [96, 96], "mode": "smooth", "pad": 4, "note": "Ware Holz" },
-    "good_bier":      { "size": [96, 96], "mode": "smooth", "pad": 4, "note": "Ware Bier" },
-    "good_salz":      { "size": [96, 96], "mode": "smooth", "pad": 4, "note": "Ware Salz" },
-    "good_hering":    { "size": [96, 96], "mode": "smooth", "pad": 4, "note": "Ware Hering" },
-    "good_eisen":     { "size": [96, 96], "mode": "smooth", "pad": 4, "note": "Ware Eisen" },
-    "good_tuch":      { "size": [96, 96], "mode": "smooth", "pad": 4, "note": "Ware Tuch" },
-    "good_wein":      { "size": [96, 96], "mode": "smooth", "pad": 4, "note": "Ware Wein" },
-    "good_pelze":     { "size": [96, 96], "mode": "smooth", "pad": 4, "note": "Ware Pelze" },
-    "bld_muehle":     { "size": [256, 256], "mode": "smooth", "pad": 6, "note": "Mühle" },
-    "bld_speicher":   { "size": [256, 256], "mode": "smooth", "pad": 6, "note": "Speicher" },
-    "bld_markt":      { "size": [256, 256], "mode": "smooth", "pad": 6, "note": "Marktplatz" },
-    "bld_kirche":     { "size": [256, 256], "mode": "smooth", "pad": 6, "note": "Kirche" },
-    "bld_mauer":      { "size": [256, 256], "mode": "smooth", "pad": 6, "note": "Stadtmauer" },
-    "bld_dom":        { "size": [256, 256], "mode": "smooth", "pad": 6, "note": "Dom" },
-    "ship_schnigge":  { "size": [256, 220], "mode": "smooth", "pad": 4, "note": "Schiff klein" },
-    "ship_kogge":     { "size": [256, 220], "mode": "smooth", "pad": 4, "note": "Schiff mittel" },
-    "ship_holk":      { "size": [256, 220], "mode": "smooth", "pad": 4, "note": "Schiff groß" },
-    "portrait_mechthild": { "size": [320, 400], "mode": "smooth", "keep_background": true, "note": "Großmutter Mechthild (Briefe)" },
-    "portrait_johan": { "size": [320, 400], "mode": "smooth", "keep_background": true, "note": "Vater Johan (Prolog)" },
-    "title":          { "size": [1600, 900], "mode": "smooth", "keep_background": true, "note": "Titelbild quer" },
-    "title_portrait": { "size": [900, 1600], "mode": "smooth", "keep_background": true, "note": "Titelbild hochkant (Handy)" }
+    "good_getreide": {
+      "size": [
+        96,
+        96
+      ],
+      "mode": "smooth",
+      "pad": 4,
+      "note": "Ware Getreide"
+    },
+    "good_holz": {
+      "size": [
+        96,
+        96
+      ],
+      "mode": "smooth",
+      "pad": 4,
+      "note": "Ware Holz"
+    },
+    "good_bier": {
+      "size": [
+        96,
+        96
+      ],
+      "mode": "smooth",
+      "pad": 4,
+      "note": "Ware Bier"
+    },
+    "good_salz": {
+      "size": [
+        96,
+        96
+      ],
+      "mode": "smooth",
+      "pad": 4,
+      "note": "Ware Salz"
+    },
+    "good_hering": {
+      "size": [
+        96,
+        96
+      ],
+      "mode": "smooth",
+      "pad": 4,
+      "note": "Ware Hering"
+    },
+    "good_eisen": {
+      "size": [
+        96,
+        96
+      ],
+      "mode": "smooth",
+      "pad": 4,
+      "note": "Ware Eisen"
+    },
+    "good_tuch": {
+      "size": [
+        96,
+        96
+      ],
+      "mode": "smooth",
+      "pad": 4,
+      "note": "Ware Tuch"
+    },
+    "good_wein": {
+      "size": [
+        96,
+        96
+      ],
+      "mode": "smooth",
+      "pad": 4,
+      "note": "Ware Wein"
+    },
+    "good_pelze": {
+      "size": [
+        96,
+        96
+      ],
+      "mode": "smooth",
+      "pad": 4,
+      "note": "Ware Pelze"
+    },
+    "bld_muehle": {
+      "size": [
+        256,
+        256
+      ],
+      "mode": "smooth",
+      "pad": 6,
+      "note": "Mühle"
+    },
+    "bld_speicher": {
+      "size": [
+        256,
+        256
+      ],
+      "mode": "smooth",
+      "pad": 6,
+      "note": "Speicher"
+    },
+    "bld_markt": {
+      "size": [
+        256,
+        256
+      ],
+      "mode": "smooth",
+      "pad": 6,
+      "note": "Marktplatz"
+    },
+    "bld_kirche": {
+      "size": [
+        256,
+        256
+      ],
+      "mode": "smooth",
+      "pad": 6,
+      "note": "Kirche"
+    },
+    "bld_mauer": {
+      "size": [
+        256,
+        256
+      ],
+      "mode": "smooth",
+      "pad": 6,
+      "note": "Stadtmauer"
+    },
+    "bld_dom": {
+      "size": [
+        256,
+        256
+      ],
+      "mode": "smooth",
+      "pad": 6,
+      "note": "Dom"
+    },
+    "ship_schnigge": {
+      "size": [
+        256,
+        220
+      ],
+      "mode": "smooth",
+      "pad": 4,
+      "note": "Schiff klein"
+    },
+    "ship_kogge": {
+      "size": [
+        256,
+        220
+      ],
+      "mode": "smooth",
+      "pad": 4,
+      "note": "Schiff mittel"
+    },
+    "ship_holk": {
+      "size": [
+        256,
+        220
+      ],
+      "mode": "smooth",
+      "pad": 4,
+      "note": "Schiff groß"
+    },
+    "portrait_mechthild": {
+      "size": [
+        320,
+        400
+      ],
+      "mode": "smooth",
+      "keep_background": true,
+      "note": "Großmutter Mechthild (Briefe)"
+    },
+    "portrait_johan": {
+      "size": [
+        320,
+        400
+      ],
+      "mode": "smooth",
+      "keep_background": true,
+      "note": "Vater Johan (Prolog)"
+    },
+    "title": {
+      "size": [
+        1600,
+        900
+      ],
+      "mode": "smooth",
+      "keep_background": true,
+      "note": "Titelbild quer"
+    },
+    "title_portrait": {
+      "size": [
+        900,
+        1600
+      ],
+      "mode": "smooth",
+      "keep_background": true,
+      "note": "Titelbild hochkant (Handy)"
+    },
+    "map_base": {
+      "size": [
+        2000,
+        1280
+      ],
+      "mode": "smooth",
+      "keep_background": true,
+      "note": "Seekarte (Bild-zu-Bild mit art/guide/map_guide.png)"
+    },
+    "map_winter": {
+      "size": [
+        2000,
+        1280
+      ],
+      "mode": "smooth",
+      "keep_background": true,
+      "note": "Seekarte Winter (optional)"
+    },
+    "tab_karte": {
+      "size": [
+        96,
+        96
+      ],
+      "mode": "smooth",
+      "pad": 4,
+      "note": "Navigation Karte"
+    },
+    "tab_flotte": {
+      "size": [
+        96,
+        96
+      ],
+      "mode": "smooth",
+      "pad": 4,
+      "note": "Navigation Flotte"
+    },
+    "tab_markt": {
+      "size": [
+        96,
+        96
+      ],
+      "mode": "smooth",
+      "pad": 4,
+      "note": "Navigation Markt"
+    },
+    "tab_lehen": {
+      "size": [
+        96,
+        96
+      ],
+      "mode": "smooth",
+      "pad": 4,
+      "note": "Navigation Lehen"
+    },
+    "tab_reich": {
+      "size": [
+        96,
+        96
+      ],
+      "mode": "smooth",
+      "pad": 4,
+      "note": "Navigation Reich"
+    },
+    "ico_gold": {
+      "size": [
+        72,
+        72
+      ],
+      "mode": "smooth",
+      "pad": 2,
+      "note": "Kopfzeile Gold"
+    },
+    "ico_ansehen": {
+      "size": [
+        72,
+        72
+      ],
+      "mode": "smooth",
+      "pad": 2,
+      "note": "Kopfzeile Ansehen"
+    },
+    "ico_zug": {
+      "size": [
+        72,
+        72
+      ],
+      "mode": "smooth",
+      "pad": 2,
+      "note": "Zug beenden"
+    },
+    "ico_musik": {
+      "size": [
+        72,
+        72
+      ],
+      "mode": "smooth",
+      "pad": 2,
+      "note": "Musik"
+    },
+    "ico_hilfe": {
+      "size": [
+        72,
+        72
+      ],
+      "mode": "smooth",
+      "pad": 2,
+      "note": "Spielanleitung"
+    },
+    "map_rose": {
+      "size": [
+        256,
+        256
+      ],
+      "mode": "smooth",
+      "pad": 2,
+      "note": "Windrose"
+    },
+    "map_cartouche": {
+      "size": [
+        512,
+        180
+      ],
+      "mode": "smooth",
+      "pad": 2,
+      "note": "Kartusche Kartentitel"
+    },
+    "map_serpent": {
+      "size": [
+        256,
+        180
+      ],
+      "mode": "smooth",
+      "pad": 2,
+      "note": "Seeschlange"
+    },
+    "city_marker": {
+      "size": [
+        64,
+        64
+      ],
+      "mode": "smooth",
+      "pad": 2,
+      "note": "Stadtsymbol"
+    },
+    "ui_wood": {
+      "size": [
+        512,
+        512
+      ],
+      "mode": "smooth",
+      "keep_background": true,
+      "note": "Holz-Textur Kopf-/Fußleiste"
+    },
+    "ui_parchment": {
+      "size": [
+        768,
+        768
+      ],
+      "mode": "smooth",
+      "keep_background": true,
+      "note": "Pergament-Textur Karten/Panels"
+    },
+    "ui_leather": {
+      "size": [
+        512,
+        512
+      ],
+      "mode": "smooth",
+      "keep_background": true,
+      "note": "Leder-Textur (optional)"
+    }
   }
 }

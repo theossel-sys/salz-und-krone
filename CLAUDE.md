@@ -50,5 +50,9 @@ Handel + Herrschaft kombiniert · Hot-Seat 1–4 Spieler + Computergegner · mod
   Schiffsbilder in Flotte/Werft (Karte nutzt weiter Code-Schiffe), Porträts in Briefen (Mechthild; Johan beim
   Schiffbruch; Erbe in Grau), Titelbild mit Ken-Burns-Effekt (quer/hochkant). Große Bilder als JPEG (Import-Skript
   speichert keep_background-Bilder als .jpg).
+- Karte + Cockpit (Wunsch): Prompts in art/PROMPTS-KARTE-COCKPIT.md, 19 neue Manifest-Einträge (map_base/map_winter
+  als Bild-zu-Bild über art/guide/map_guide.png = exakte Küstenlinien aus ui.js LAND, 1600x1024 = 1,6 × viewBox;
+  Tab-Icons, Kopfzeilen-Icons, Windrose, Kartusche, Seeschlange, Stadtsymbol, Holz/Pergament/Leder-Texturen).
+  Wartet auf Bilder aus der lokalen Session; Einbau: map_base als <image> im SVG statt Meer/Land-Flächen.
 - Ideen für später: Konvois/Kapitäne, Hansetage/Belagerungen, Heirat & Erbfolge, Musik/SFX, bessere Grafiken,
   KI-Schwierigkeitsstufen.
