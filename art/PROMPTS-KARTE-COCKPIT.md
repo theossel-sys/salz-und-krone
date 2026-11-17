@@ -16,6 +16,11 @@ Die Karte muss **genau** zu den Stadtpositionen im Spiel passen. Deshalb:
    **Küstenlinien an derselben Stelle bleiben**. Ergebnis mit der Vorlage vergleichen; verschobene Küsten → Stärke senken.
 3. Optional ControlNet „Canny“ oder „Lineart“ mit derselben Vorlage, dann darf die Stärke höher sein (70–80 %).
 
+> **Erfahrung mit FLUX.2 klein:** Bild-zu-Bild klappt damit nicht (bis ~93 % kommt die Vorlage fast unverändert zurück,
+> bei 100 % wandern die Küsten). Die eingebaute Karte ist deshalb montiert: Land und See einzeln aus Draw Things in
+> `art/map_parts/`, `python3 tools/compose_map.py` setzt sie über die Maske von `map_guide.png` zusammen
+> (Prompts und Seeds im Kopf des Skripts). Ändert sich die Vorlage, nur das Skript neu laufen lassen.
+
 | Datei | Prompt |
 |---|---|
 | `map_base.png` | antique hand-painted nautical chart of the North Sea and Baltic Sea, 15th century portolan map style, land painted as aged warm parchment with fine ink hatching along every coastline, small hand-drawn hills, forests and fields as tiny ink illustrations inland, sea painted in muted teal-blue watercolor with fine engraved wave lines, a few small sailing ships and a sea serpent in the open North Sea, soft vignette, top-down map view |
