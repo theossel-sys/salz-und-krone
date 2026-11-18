@@ -29,10 +29,13 @@ def remove_background(img, tol):
     img = img.convert('RGBA')
     w, h = img.size
     px = img.load()
-    # Randfarbe = Durchschnitt der vier Ecken
+    # Hintergrundfarbe = die Eckfarbe, die am Bildrand am häufigsten vorkommt
     corners = [px[0, 0], px[w - 1, 0], px[0, h - 1], px[w - 1, h - 1]]
-    bg = tuple(sum(c[i] for c in corners) // 4 for i in range(3))
-    near = lambda c: sum(abs(c[i] - bg[i]) for i in range(3)) <= tol
+    border = [px[x, 0] for x in range(0, w, 4)] + [px[x, h - 1] for x in range(0, w, 4)] + \
+             [px[0, y] for y in range(0, h, 4)] + [px[w - 1, y] for y in range(0, h, 4)]
+    dist = lambda a, b: sum(abs(a[i] - b[i]) for i in range(3))
+    bg = max(corners, key=lambda c: sum(1 for b in border if dist(b, c) <= tol))[:3]
+    near = lambda c: dist(c, bg) <= tol
     seen = bytearray(w * h)
     q = deque()
     for x in range(w):
@@ -68,7 +71,7 @@ def remove_background(img, tol):
 
 
 def fit(img, size, mode, pad):
-    box = img.getbbox()
+    box = img.getchannel('A').getbbox()
     if box:
         img = img.crop(box)
     tw, th = size
